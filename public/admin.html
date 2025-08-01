@@ -1,0 +1,81 @@
+<h2>Admin Dashboard</h2>
+
+<h3>Create User</h3>
+<form id="createUserForm">
+    <input name="username" placeholder="Username" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <select name="role">
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Create</button>
+</form>
+
+<h3>Users</h3>
+<ul id="userList"></ul>
+
+<script>
+    const token = localStorage.getItem('token');
+
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = e.target.username.value;
+        const password = e.target.password.value;
+        const role = e.target.role.value;
+
+        const res = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ username, password, role })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+        loadUsers();
+    });
+
+    async function loadUsers() {
+        const res = await fetch('/api/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const users = await res.json();
+        const list = document.getElementById('userList');
+        list.innerHTML = '';
+        users.forEach(user => {
+            const li = document.createElement('li');
+            li.textContent = `${user.username} (${user.role})`;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerText = 'Delete';
+            deleteBtn.onclick = async () => {
+                await fetch(`/api/users/${user.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadUsers();
+            };
+
+            const promoteBtn = document.createElement('button');
+            promoteBtn.innerText = 'Make Manager';
+            promoteBtn.onclick = async () => {
+                await fetch(`/api/users/${user.id}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ role: 'manager' })
+                });
+                loadUsers();
+            };
+
+            li.append(deleteBtn, promoteBtn);
+            list.appendChild(li);
+        });
+    }
+
+    loadUsers();
+</script>
