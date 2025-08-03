@@ -1,4 +1,4 @@
-<h2>Manager Dashboard</h2>
+<h2 id="welcome">Manager Dashboard</h2>
 <section>
   <button onclick="viewUsers()">View Employees</button>
 </section>
@@ -27,6 +27,10 @@
 
 <script>
   const token = localStorage.getItem('token');
+
+  fetch('/api/auth/session').then(res => res.json()).then(u => {
+    document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+  }).catch(() => {});
 
   async function viewUsers() {
     const res = await fetch('/api/users', {

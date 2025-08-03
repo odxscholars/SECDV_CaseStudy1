@@ -1,4 +1,4 @@
-<h2>Employee Dashboard</h2>
+<h2 id="welcome">Employee Dashboard</h2>
 <section>
   <button onclick="viewProfile()">View My Profile</button>
 </section>
@@ -18,6 +18,10 @@
 
 <script>
   const token = localStorage.getItem('token');
+
+  fetch('/api/auth/session').then(res => res.json()).then(u => {
+    document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+  }).catch(() => {});
 
   async function viewProfile() {
     const res = await fetch('/api/users/me', {

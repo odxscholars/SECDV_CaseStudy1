@@ -1,4 +1,4 @@
-<h2>Admin Dashboard</h2>
+<h2 id="welcome">Admin Dashboard</h2>
 
 <section>
     <h3>Create User</h3>
@@ -37,6 +37,10 @@
 
 <script>
     const token = localStorage.getItem('token');
+
+    fetch('/api/auth/session').then(res => res.json()).then(u => {
+        document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+    }).catch(() => {});
 
     document.getElementById('createUserForm').addEventListener('submit', async (e) => {
         e.preventDefault();
