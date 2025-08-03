@@ -61,6 +61,24 @@
       document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
       }).catch(() => {});
 
+    function validatePassword(password) {
+        const minLength = 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber    = /[0-9]/.test(password);
+        const hasSpecial   = /[\W_]/.test(password);
+
+        const missing = [];
+
+        if (password.length < minLength) missing.push(`at least ${minLength} characters`);
+        if (!hasUppercase) missing.push('an uppercase letter');
+        if (!hasLowercase) missing.push('a lowercase letter');
+        if (!hasNumber)    missing.push('a number');
+        if (!hasSpecial)   missing.push('a special character');
+
+        return missing;
+    }
+
     const passwordInput = document.getElementById('passwordInput');
     const checkLength = document.getElementById('check-length');
     const checkUppercase = document.getElementById('check-uppercase');
@@ -99,19 +117,7 @@
         }
 
         // Password requirements
-        const minLength = 8;
-        const hasUppercase = /[A-Z]/.test(password);
-        const hasLowercase = /[a-z]/.test(password);
-        const hasNumber    = /[0-9]/.test(password);
-        const hasSpecial   = /[\W_]/.test(password);
-
-        const missing = [];
-
-        if (password.length < minLength) missing.push(`at least ${minLength} characters`);
-        if (!hasUppercase) missing.push('an uppercase letter');
-        if (!hasLowercase) missing.push('a lowercase letter');
-        if (!hasNumber)    missing.push('a number');
-        if (!hasSpecial)   missing.push('a special character');
+        const missing = validatePassword(password);
 
         if (missing.length > 0) {
             alert(`Password must include ${missing.join(', ')}.`);
@@ -244,19 +250,7 @@
         const oldPassword = form.oldPassword.value;
         const newPassword = form.newPassword.value;
 
-        const minLength = 8;
-        const hasUppercase = /[A-Z]/.test(newPassword);
-        const hasLowercase = /[a-z]/.test(newPassword);
-        const hasNumber    = /[0-9]/.test(newPassword);
-        const hasSpecial   = /[\W_]/.test(newPassword);
-
-        const missing = [];
-
-        if (newPassword.length < minLength) missing.push(`at least ${minLength} characters`);
-        if (!hasUppercase) missing.push('an uppercase letter');
-        if (!hasLowercase) missing.push('a lowercase letter');
-        if (!hasNumber)    missing.push('a number');
-        if (!hasSpecial)   missing.push('a special character');
+        const missing = validatePassword(newPassword);
 
         if (missing.length > 0) {
         alert(`New password must include ${missing.join(', ')}.`);
