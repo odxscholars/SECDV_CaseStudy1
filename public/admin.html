@@ -1,27 +1,43 @@
 <h2>Admin Dashboard</h2>
 
-<h3>Create User</h3>
-<form id="createUserForm">
-    <input name="username" placeholder="Username" required />
-    <input name="password" type="password" placeholder="Password" required />
-    <select name="role">
-        <option value="manager">Manager</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Create</button>
-</form>
+<section>
+    <h3>Create User</h3>
+    <form id="createUserForm">
+        <input name="username" placeholder="Username" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <select name="role">
+            <option value="manager">Manager</option>
+            <option value="employee">Employee</option>
+        </select>
+        <button type="submit">Create</button>
+    </form>
+</section>
 
-<h3>Users</h3>
-<ul id="userList"></ul>
+<section>
+    <h3>Users</h3>
+    <ul id="userList"></ul>
+</section>
+
+<section>
+    <h3>Application Logs</h3>
+    <button onclick="loadLogs()">View Logs</button>
+    <ul id="logList"></ul>
+</section>
 
 <script>
     const token = localStorage.getItem('token');
 
     document.getElementById('createUserForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = e.target.username.value;
-        const password = e.target.password.value;
-        const role = e.target.role.value;
+        const form = e.target;
+        const username = form.username.value.trim();
+        const password = form.password.value;
+        const role = form.role.value;
+
+        if (!username || !password || !role) {
+            alert('All fields are required');
+            return;
+        }
 
         const res = await fetch('/api/users', {
             method: 'POST',
@@ -34,7 +50,9 @@
 
         const data = await res.json();
         alert(data.message);
+        form.reset();
         loadUsers();
+        loadLogs(); // refresh logs after user creation
     });
 
     async function loadUsers() {
@@ -56,6 +74,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 loadUsers();
+                loadLogs();
             };
 
             const promoteBtn = document.createElement('button');
@@ -70,10 +89,25 @@
                     body: JSON.stringify({ role: 'manager' })
                 });
                 loadUsers();
+                loadLogs();
             };
 
             li.append(deleteBtn, promoteBtn);
             list.appendChild(li);
+        });
+    }
+
+    async function loadLogs() {
+        const res = await fetch('/api/logs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const logs = await res.json();
+        const logList = document.getElementById('logList');
+        logList.innerHTML = '';
+        logs.forEach(log => {
+            const li = document.createElement('li');
+            li.textContent = `[${log.timestamp}] ${log.user}: ${log.action}`;
+            logList.appendChild(li);
         });
     }
 
