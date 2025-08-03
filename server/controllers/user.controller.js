@@ -22,7 +22,7 @@ const createUser = async (req, res) => {
     if (exists) return res.status(409).json({ message: 'Username already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash] };
+    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash], lastPasswordChange: new Date().toISOString() };
     users.push(newUser);
 
     addLog(`Created ${role} account for '${username}'`, req.user.username);
@@ -77,8 +77,17 @@ const changePassword = async (req, res) => {
         }
     }
 
+    const now = new Date();
+    const lastChange = new Date(user.lastPasswordChange);
+    const hoursSinceChange = (now - lastChange) / (1000 * 60 * 60);
+
+    if (hoursSinceChange < 24) {
+        return res.status(400).json({ message: 'You can only change your password once every 24 hours' });
+    }
+
     const newHash = await bcrypt.hash(newPassword, 10);
     user.password = newHash;
+    user.lastPasswordChange = new Date().toISOString();
 
     if (!user.passwordHistory) user.passwordHistory = [];
     user.passwordHistory.push(newHash);

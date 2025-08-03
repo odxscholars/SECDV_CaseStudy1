@@ -6,21 +6,24 @@ const users = [
     username: 'admin',
     password: bcrypt.hashSync('Admin123!', 10),
     role: 'admin',
-    passwordHistory: [bcrypt.hashSync('Admin123!', 10)]
+    passwordHistory: [bcrypt.hashSync('Admin123!', 10)],
+    lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString()
   },
   {
     id: 2,
     username: 'manager',
     password: bcrypt.hashSync('Manager123!', 10),
     role: 'manager',
-    passwordHistory: [bcrypt.hashSync('Manager123!', 10)]
+    passwordHistory: [bcrypt.hashSync('Manager123!', 10)],
+    lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString()
   },
   {
     id: 3,
     username: 'employee',
     password: bcrypt.hashSync('Employee123!', 10),
     role: 'employee',
-    passwordHistory: [bcrypt.hashSync('Employee123!', 10)]
+    passwordHistory: [bcrypt.hashSync('Employee123!', 10)],
+    lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString()
   }
 ];
 
