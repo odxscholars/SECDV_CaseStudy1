@@ -1,4 +1,5 @@
 <h2 id="welcome">Manager Dashboard</h2>
+<button onclick="logout()">Logout</button>
 <section>
   <button onclick="viewUsers()">View Employees</button>
 </section>
@@ -108,4 +109,9 @@
   });
 
   loadPosts();
-</script>
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('token');
+    window.location.href = '/';
+  }
+  </script>

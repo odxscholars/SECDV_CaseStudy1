@@ -34,4 +34,13 @@ const session = (req, res) => {
     }
 };
 
-module.exports = { login, register, session };
+const logout = (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).json({ message: 'Logout failed' });
+        }
+        res.json({ message: 'Logged out' });
+    });
+};
+
+module.exports = { login, register, session, logout };

@@ -1,4 +1,5 @@
 <h2 id="welcome">Admin Dashboard</h2>
+<button onclick="logout()">Logout</button>
 
 <section>
     <h3>Create User</h3>
@@ -39,8 +40,8 @@
     const token = localStorage.getItem('token');
 
     fetch('/api/auth/session').then(res => res.json()).then(u => {
-        document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
-    }).catch(() => {});
+      document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+      }).catch(() => {});
 
     document.getElementById('createUserForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -154,5 +155,10 @@
         form.reset();
     });
 
-    loadUsers();
-</script>
+      loadUsers();
+      async function logout() {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          localStorage.removeItem('token');
+          window.location.href = '/';
+      }
+  </script>
