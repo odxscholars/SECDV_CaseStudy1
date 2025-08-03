@@ -9,7 +9,17 @@
 <h2>Register</h2>
 <form id="registerForm">
     <input type="text" name="username" placeholder="Username" required />
-    <input type="password" name="password" placeholder="Password" required />
+    <input type="password" name="password" placeholder="Password" required id="passwordInput" />
+    
+    <p> Your password must contain: </p>
+    <ul id="passwordChecklist">
+        <li id="check-length">❌ At least 8 characters</li>
+        <li id="check-uppercase">❌ One uppercase letter</li>
+        <li id="check-lowercase">❌ One lowercase letter</li>
+        <li id="check-number">❌ One number</li>
+        <li id="check-special">❌ One special character</li>
+    </ul>
+
     <button type="submit">Register</button>
 </form>
 <p>Already have an account? <a href="/index.html">Login</a></p>

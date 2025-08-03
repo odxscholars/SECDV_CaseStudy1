@@ -22,7 +22,7 @@ const createUser = async (req, res) => {
     if (exists) return res.status(409).json({ message: 'Username already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const newUser = { id: nextId++, username, password: hash, role };
+    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash] };
     users.push(newUser);
 
     addLog(`Created ${role} account for '${username}'`, req.user.username);
@@ -66,12 +66,31 @@ const changePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const user = users.find(u => u.id === req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
     const valid = await bcrypt.compare(oldPassword, user.password);
     if (!valid) return res.status(401).json({ message: 'Invalid password' });
-    user.password = await bcrypt.hash(newPassword, 10);
+
+    for (const oldHash of user.passwordHistory || []) {
+        const reused = await bcrypt.compare(newPassword, oldHash);
+        if (reused) {
+            return res.status(400).json({ message: 'You cannot reuse a previous password' });
+        }
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    user.password = newHash;
+
+    if (!user.passwordHistory) user.passwordHistory = [];
+    user.passwordHistory.push(newHash);
+
+    if (user.passwordHistory.length > 5) {
+        user.passwordHistory = user.passwordHistory.slice(-5);
+    }
+
     addLog(`Changed password for user ID ${user.id}`, user.username);
     res.json({ message: 'Password updated' });
 };
+
 
 const listUsers = (req, res) => {
     const filtered = req.user.role === 'manager'
