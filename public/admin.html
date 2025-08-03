@@ -5,7 +5,7 @@
     <h3>Create User</h3>
     <form id="createUserForm">
         <input name="username" placeholder="Username" required />
-        <input name="password" type="password" placeholder="Password" required />
+        <input name="password" type="password" placeholder="Password" required id="passwordInput"/>
         <select name="role">
             <option value="admin">Admin</option>
             <option value="manager">Manager</option>
@@ -13,6 +13,15 @@
         </select>
         <button type="submit">Create</button>
     </form>
+    
+    <p> The password must contain: </p>
+    <ul id="passwordChecklist">
+        <li id="check-length">❌ At least 8 characters</li>
+        <li id="check-uppercase">❌ One uppercase letter</li>
+        <li id="check-lowercase">❌ One lowercase letter</li>
+        <li id="check-number">❌ One number</li>
+        <li id="check-special">❌ One special character</li>
+    </ul>
 </section>
 
 <section>
@@ -31,17 +40,17 @@
     <h3>Change Password</h3>
     <form id="passwordForm">
         <input name="oldPassword" type="password" placeholder="Old Password" required />
-        <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput"/>
+        <input name="newPassword" type="password" placeholder="New Password" required id="newPasswordInput"/>
         <button type="submit">Change</button>
     </form>
 
-   <p> Your new password must contain: </p>
-    <ul id="passwordChecklist">
-        <li id="check-length">❌ At least 8 characters</li>
-        <li id="check-uppercase">❌ One uppercase letter</li>
-        <li id="check-lowercase">❌ One lowercase letter</li>
-        <li id="check-number">❌ One number</li>
-        <li id="check-special">❌ One special character</li>
+    <p> Your new password must contain: </p>
+    <ul id="newPasswordChecklist">
+        <li id="new-check-length">❌ At least 8 characters</li>
+        <li id="new-check-uppercase">❌ One uppercase letter</li>
+        <li id="new-check-lowercase">❌ One lowercase letter</li>
+        <li id="new-check-number">❌ One number</li>
+        <li id="new-check-special">❌ One special character</li>
     </ul>
 </section>
 
@@ -52,6 +61,31 @@
       document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
       }).catch(() => {});
 
+    const passwordInput = document.getElementById('passwordInput');
+    const checkLength = document.getElementById('check-length');
+    const checkUppercase = document.getElementById('check-uppercase');
+    const checkLowercase = document.getElementById('check-lowercase');
+    const checkNumber = document.getElementById('check-number');
+    const checkSpecial = document.getElementById('check-special');
+
+    passwordInput.addEventListener('input', () => {
+        const password = passwordInput.value;
+
+        updateChecklist(checkLength, password.length >= 8);
+        updateChecklist(checkUppercase, /[A-Z]/.test(password));
+        updateChecklist(checkLowercase, /[a-z]/.test(password));
+        updateChecklist(checkNumber, /[0-9]/.test(password));
+        updateChecklist(checkSpecial, /[\W_]/.test(password));
+    });
+
+    function resetChecklist() {
+        updateChecklist(checkLength, false);
+        updateChecklist(checkUppercase, false);
+        updateChecklist(checkLowercase, false);
+        updateChecklist(checkNumber, false);
+        updateChecklist(checkSpecial, false);
+    }
+
     document.getElementById('createUserForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.target;
@@ -61,6 +95,26 @@
 
         if (!username || !password || !role) {
             alert('All fields are required');
+            return;
+        }
+
+        // Password requirements
+        const minLength = 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber    = /[0-9]/.test(password);
+        const hasSpecial   = /[\W_]/.test(password);
+
+        const missing = [];
+
+        if (password.length < minLength) missing.push(`at least ${minLength} characters`);
+        if (!hasUppercase) missing.push('an uppercase letter');
+        if (!hasLowercase) missing.push('a lowercase letter');
+        if (!hasNumber)    missing.push('a number');
+        if (!hasSpecial)   missing.push('a special character');
+
+        if (missing.length > 0) {
+            alert(`Password must include ${missing.join(', ')}.`);
             return;
         }
 
@@ -76,6 +130,7 @@
         const data = await res.json();
         alert(data.message);
         form.reset();
+        resetChecklist();
         loadUsers();
         loadLogs(); // refresh logs after user creation
     });
@@ -146,21 +201,21 @@
         });
     }
 
-    const passwordInput = document.getElementById('passwordInput');
-    const checkLength = document.getElementById('check-length');
-    const checkUppercase = document.getElementById('check-uppercase');
-    const checkLowercase = document.getElementById('check-lowercase');
-    const checkNumber = document.getElementById('check-number');
-    const checkSpecial = document.getElementById('check-special');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const newCheckLength = document.getElementById('new-check-length');
+    const newCheckUppercase = document.getElementById('new-check-uppercase');
+    const newCheckLowercase = document.getElementById('new-check-lowercase');
+    const newCheckNumber = document.getElementById('new-check-number');
+    const newCheckSpecial = document.getElementById('new-check-special');
 
-    passwordInput.addEventListener('input', () => {
-        const password = passwordInput.value;
+    newPasswordInput.addEventListener('input', () => {
+        const password = newPasswordInput.value;
 
-        updateChecklist(checkLength, password.length >= 8);
-        updateChecklist(checkUppercase, /[A-Z]/.test(password));
-        updateChecklist(checkLowercase, /[a-z]/.test(password));
-        updateChecklist(checkNumber, /[0-9]/.test(password));
-        updateChecklist(checkSpecial, /[\W_]/.test(password));
+        updateChecklist(newCheckLength, password.length >= 8);
+        updateChecklist(newCheckUppercase, /[A-Z]/.test(password));
+        updateChecklist(newCheckLowercase, /[a-z]/.test(password));
+        updateChecklist(newCheckNumber, /[0-9]/.test(password));
+        updateChecklist(newCheckSpecial, /[\W_]/.test(password));
     });
 
     function updateChecklist(element, valid) {
@@ -175,12 +230,12 @@
         }
     }
 
-    function resetChecklist() {
-        updateChecklist(checkLength, false);
-        updateChecklist(checkUppercase, false);
-        updateChecklist(checkLowercase, false);
-        updateChecklist(checkNumber, false);
-        updateChecklist(checkSpecial, false);
+    function resetNewChecklist() {
+        updateChecklist(newCheckLength, false);
+        updateChecklist(newCheckUppercase, false);
+        updateChecklist(newCheckLowercase, false);
+        updateChecklist(newCheckNumber, false);
+        updateChecklist(newCheckSpecial, false);
     }
 
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
@@ -220,7 +275,7 @@
         const data = await res.json();
         alert(data.message);
         form.reset();
-        resetChecklist();
+        resetNewChecklist();
     });
 
     loadUsers();
