@@ -114,11 +114,37 @@ const getProfile = (req, res) => {
     res.json({ id: user.id, username: user.username, role: user.role });
 };
 
+const updateRecovery = (req, res) => {
+    const { recoveryQuestionA, recoveryAnswerA, recoveryQuestionB, recoveryAnswerB } = req.body;
+    const user = users.find(u => u.id === req.user.id);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!recoveryQuestionA || !recoveryAnswerA || !recoveryQuestionB || !recoveryAnswerB) {
+        return res.status(400).json({ message: 'All recovery fields are required' });
+    }
+
+    if (recoveryQuestionA === recoveryQuestionB) {
+        return res.status(400).json({ message: 'Recovery questions must be different' });
+    }
+
+    user.recoveryQuestionA = recoveryQuestionA;
+    user.recoveryAnswerA = recoveryAnswerA;
+    user.recoveryQuestionB = recoveryQuestionB;
+    user.recoveryAnswerB = recoveryAnswerB;
+
+    addLog(`Updated recovery questions for user ID ${user.id}`, user.username);
+    res.json({ message: 'Recovery questions updated successfully' });
+};
+
 module.exports = {
     listUsers,
     getProfile,
     createUser,
     deleteUser,
     updateUserRole,
-    changePassword
+    changePassword,
+    updateRecovery
 };

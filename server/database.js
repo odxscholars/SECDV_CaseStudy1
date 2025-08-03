@@ -11,7 +11,11 @@ const users = [
     lastLogin: null,
     lastFailedLogin: null,
     currentLogin: null,
-    consecutiveFails: 0
+    consecutiveFails: 0,
+    recoveryQuestionA: 'What’s a nickname that only a few close people have ever used for you?',
+    recoveryAnswerA: 'Rudolph',
+    recoveryQuestionB: 'What’s an unusual phrase or saying that you often use and few others do?',
+    recoveryAnswerB: 'Time is time'
   },
   {
     id: 2,
@@ -23,7 +27,11 @@ const users = [
     lastLogin: null,
     lastFailedLogin: null,
     currentLogin: null,
-    consecutiveFails: 0
+    consecutiveFails: 0,
+    recoveryQuestionA: 'What’s a nickname that only a few close people have ever used for you?',
+    recoveryAnswerA: 'Rudolph',
+    recoveryQuestionB: 'What’s an unusual phrase or saying that you often use and few others do?',
+    recoveryAnswerB: 'Time is time'
   },
   {
     id: 3,
@@ -35,7 +43,11 @@ const users = [
     lastLogin: null,
     lastFailedLogin: null,
     currentLogin: null,
-    consecutiveFails: 0
+    consecutiveFails: 0,
+    recoveryQuestionA: 'What’s a nickname that only a few close people have ever used for you?',
+    recoveryAnswerA: 'Rudolph',
+    recoveryQuestionB: 'What’s an unusual phrase or saying that you often use and few others do?',
+    recoveryAnswerB: 'Time is time'
   }
 ];
 
