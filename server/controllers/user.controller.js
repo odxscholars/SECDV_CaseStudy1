@@ -83,6 +83,10 @@ const changePassword = async (req, res) => {
     if (!user.passwordHistory) user.passwordHistory = [];
     user.passwordHistory.push(newHash);
 
+    if (user.passwordHistory.length > 5) {
+        user.passwordHistory = user.passwordHistory.slice(-5);
+    }
+
     addLog(`Changed password for user ID ${user.id}`, user.username);
     res.json({ message: 'Password updated' });
 };
