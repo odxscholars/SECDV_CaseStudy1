@@ -1,0 +1,14 @@
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Authentication middleware error","timestamp":"2025-08-03T11:34:20.947Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Authentication middleware error","timestamp":"2025-08-03T11:35:39.872Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Authentication middleware error","timestamp":"2025-08-03T11:35:59.170Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Authentication middleware error","timestamp":"2025-08-03T11:36:50.417Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Authentication middleware error","timestamp":"2025-08-03T11:37:07.566Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Registration error","timestamp":"2025-08-03T11:41:46.322Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Registration error","timestamp":"2025-08-03T11:41:52.603Z"}
+{"ip":"::1","level":"warn","message":"Registration attempt with existing username","timestamp":"2025-08-03T11:41:58.748Z","username":"test99"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Registration error","timestamp":"2025-08-03T11:42:04.036Z"}
+{"error":"Maximum call stack size exceeded","ip":"::1","level":"error","message":"Registration error","timestamp":"2025-08-03T11:45:36.130Z"}
+{"ip":"::1","level":"warn","message":"VALIDATION_FAILURE","passwordLength":202,"reason":"Password too long","timestamp":"2025-08-03T12:58:13.835Z"}
+{"ip":"::1","level":"warn","message":"VALIDATION_FAILURE","reason":"Username length invalid","timestamp":"2025-08-03T12:58:32.261Z","username":2}
+{"ip":"::1","level":"warn","message":"AUTH_ATTEMPT","reason":"Invalid credentials","success":false,"timestamp":"2025-08-03T12:59:46.839Z","username":"testuser"}
+{"ip":"::1","level":"warn","message":"ACCESS_CONTROL","path":"/","reason":"Missing authorization header","success":false,"timestamp":"2025-08-03T13:00:08.889Z"}
