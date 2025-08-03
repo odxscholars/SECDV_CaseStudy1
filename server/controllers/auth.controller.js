@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { findByUsername, createUserRecord } = require('../models/user.model');
+const { findById, findByUsername, createUserRecord } = require('../models/user.model');
 const logger = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET;
 
@@ -28,7 +28,6 @@ const login = async (req, res) => {
         
         try {
             user = findByUsername(username);
-            console.log("User found:", user);  // TEMPORARY DEBUG
             if (user && await bcrypt.compare(password, user.password)) {
                 loginSuccess = true;
             }
@@ -39,9 +38,13 @@ const login = async (req, res) => {
                 ip: req.ip 
             });
         }
-        
-        console.log("hello")
+
         if (!loginSuccess) {
+            // 2.1.12
+            if (user) {
+                user.lastFailedLogin = new Date();
+            }
+
             // LOG FAILED AUTH ATTEMPT (2.4.6)
             logger.warn('AUTH_ATTEMPT', { 
                 success: false,
@@ -55,6 +58,10 @@ const login = async (req, res) => {
                 message: 'Invalid credentials' 
             });
         }
+
+        // 2.1.12
+        user.lastLogin = user.currentLogin;
+        user.currentLogin = new Date();
 
         // LOG SUCCESSFUL AUTH ATTEMPT (2.4.6)
         logger.info('AUTH_ATTEMPT', { 
@@ -71,7 +78,7 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin };
         
         res.json({ 
             success: true, 
@@ -175,7 +182,7 @@ const register = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin };
         
         logger.info('User registered successfully', { 
             userId: user.id, 
@@ -228,6 +235,7 @@ const session = (req, res) => {
 const logout = (req, res) => {
     try {
         const userId = req.session?.user?.id;
+        const user = findById(userId);
         req.session.destroy(err => {
             if (err) {
                 logger.error('Logout error', { 
@@ -239,6 +247,7 @@ const logout = (req, res) => {
                     message: 'Logout failed' 
                 });
             }
+
             logger.info('User logged out', { userId });
             res.json({ 
                 success: true, 

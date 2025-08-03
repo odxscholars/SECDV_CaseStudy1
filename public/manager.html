@@ -1,4 +1,8 @@
 <h2 id="welcome">Manager Dashboard</h2>
+<ul id="loginLog">
+    <li id="lastSuccessfulLogin"></li>
+    <li id="lastFailedLogin"></li>
+</ul>
 <button onclick="logout()">Logout</button>
 <section>
   <button onclick="viewUsers()">View Employees</button>
@@ -40,6 +44,12 @@
 
   fetch('/api/auth/session').then(res => res.json()).then(u => {
     document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
+    document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin 
+      ? `Last successful login: ${new Date(u.user.lastLogin).toLocaleString()}`
+      : 'Last successful login: Never';
+    document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin 
+      ? `Last failed login: ${new Date(u.user.lastFailedLogin).toLocaleString()}`
+      : 'Last failed login: Never';
   }).catch(() => {});
 
   async function viewUsers() {
