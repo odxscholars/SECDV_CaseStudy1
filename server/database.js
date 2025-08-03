@@ -10,7 +10,8 @@ const users = [
     lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString(),
     lastLogin: null,
     lastFailedLogin: null,
-    currentLogin: null
+    currentLogin: null,
+    consecutiveFails: 0
   },
   {
     id: 2,
@@ -21,7 +22,8 @@ const users = [
     lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString(),
     lastLogin: null,
     lastFailedLogin: null,
-    currentLogin: null
+    currentLogin: null,
+    consecutiveFails: 0
   },
   {
     id: 3,
@@ -32,7 +34,8 @@ const users = [
     lastPasswordChange: new Date('2025-08-01T00:00:00Z').toISOString(),
     lastLogin: null,
     lastFailedLogin: null,
-    currentLogin: null
+    currentLogin: null,
+    consecutiveFails: 0
   }
 ];
 

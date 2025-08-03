@@ -28,6 +28,23 @@ const login = async (req, res) => {
         
         try {
             user = findByUsername(username);
+            if (user && user.consecutiveFails >= 5) {
+                const lockoutDuration = 5 * 60 * 1000; // 5 minutes in ms
+                const timeSinceLastFail = Date.now() - new Date(user.lastFailedLogin).getTime();
+                const timeRemaining = lockoutDuration - timeSinceLastFail;
+
+                if (timeRemaining > 0) {
+                    const minutesLeft = Math.floor(timeRemaining / 60000);
+                    const secondsLeft = Math.floor((timeRemaining % 60000) / 1000);
+                    return res.status(423).json({ 
+                        success: false, 
+                        message: `Account temporarily locked due to too many failed login attempts. Please try again in ${minutesLeft} minute(s) and ${secondsLeft} second(s).` 
+                    });
+                }
+                else {
+                    user.consecutiveFails = 0;
+                }
+            }
             if (user && await bcrypt.compare(password, user.password)) {
                 loginSuccess = true;
             }
@@ -43,6 +60,7 @@ const login = async (req, res) => {
             // 2.1.12
             if (user) {
                 user.lastFailedLogin = new Date();
+                user.consecutiveFails++;
             }
 
             // LOG FAILED AUTH ATTEMPT (2.4.6)
@@ -62,6 +80,7 @@ const login = async (req, res) => {
         // 2.1.12
         user.lastLogin = user.currentLogin;
         user.currentLogin = new Date();
+        user.consecutiveFails = 0;
 
         // LOG SUCCESSFUL AUTH ATTEMPT (2.4.6)
         logger.info('AUTH_ATTEMPT', { 
@@ -78,7 +97,7 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
         
         res.json({ 
             success: true, 
@@ -182,7 +201,7 @@ const register = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
         
         logger.info('User registered successfully', { 
             userId: user.id, 
