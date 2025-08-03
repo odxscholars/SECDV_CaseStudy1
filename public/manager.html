@@ -39,6 +39,14 @@
     </ul>
 </section>
 
+<section>
+    <h3>Update Recovery</h3>
+        <form id="recoveryForm">
+        <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput"/>
+        <button type="submit">Change Recovery Questions</button>
+    </form>
+</section>
+
 <script>
   const token = localStorage.getItem('token');
 
@@ -184,6 +192,36 @@
     alert(data.message);
     form.reset();
     resetChecklist();
+  });
+
+  document.getElementById('recoveryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const password = document.getElementById('recoveryPasswordInput').value;
+
+    const sessionRes = await fetch('/api/auth/session');
+    const sessionData = await sessionRes.json();
+    const username = sessionData.user?.username;
+
+    if (!username) {
+      alert('Unable to retrieve session. Please log in again.');
+      return;
+    }
+
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('recoveryPasswordInput').value = '';
+      window.location.href = '/updateRecovery.html';
+    } else {
+      alert(data.message || 'Password verification failed.');
+    }
   });
 
   loadPosts();
