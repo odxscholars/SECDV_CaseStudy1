@@ -4,10 +4,8 @@ const { addLog } = require('./log.controller');
 let nextId = 1;
 
 const listPosts = (req, res) => {
-    const visible = ['admin', 'manager'].includes(req.user.role)
-        ? posts
-        : posts.filter(p => p.author === req.user.username);
-    res.json(visible);
+    // Allow all authenticated users to view every post
+    res.json(posts);
 };
 
 const createPost = (req, res) => {

@@ -1,4 +1,5 @@
 <h2 id="welcome">Employee Dashboard</h2>
+<button onclick="logout()">Logout</button>
 <section>
   <button onclick="viewProfile()">View My Profile</button>
 </section>
@@ -18,10 +19,15 @@
 
 <script>
   const token = localStorage.getItem('token');
+  let currentUser = null;
 
   fetch('/api/auth/session').then(res => res.json()).then(u => {
+    currentUser = u;
     document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
-  }).catch(() => {});
+    loadPosts();
+  }).catch(() => {
+    loadPosts();
+  });
 
   async function viewProfile() {
     const res = await fetch('/api/users/me', {
@@ -54,31 +60,37 @@
     posts.forEach(p => {
       const li = document.createElement('li');
       li.textContent = `[${new Date(p.createdAt).toLocaleString()}] ${p.author}: ${p.content}`;
-      const editBtn = document.createElement('button');
-      editBtn.textContent = 'Edit';
-      editBtn.onclick = async () => {
-        const newContent = prompt('Edit post', p.content);
-        if (!newContent) return;
-        await fetch(`/api/posts/${p.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ content: newContent })
-        });
-        loadPosts();
-      };
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'Delete';
-      delBtn.onclick = async () => {
-        await fetch(`/api/posts/${p.id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        loadPosts();
-      };
-      li.append(editBtn, delBtn);
+      if (currentUser && p.author === currentUser.username) {
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = async () => {
+          const newContent = prompt('Edit post', p.content);
+          if (!newContent) return;
+          await fetch(`/api/posts/${p.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ content: newContent })
+          });
+          loadPosts();
+        };
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = async () => {
+          await fetch(`/api/posts/${p.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          loadPosts();
+        };
+        li.append(editBtn, delBtn);
+      }
       list.appendChild(li);
     });
   }
 
-  loadPosts();
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('token');
+    window.location.href = '/';
+  }
 </script>
