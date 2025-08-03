@@ -1,7 +1,8 @@
+const { info } = require('../utils/logger');
 const logs = [];
 
 function addLog(action, user) {
-    console.log(`Log Action: ${action} by User: ${user}`);
+    info(action, user);
     logs.push({
         id: logs.length + 1,
         action,

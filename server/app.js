@@ -6,11 +6,13 @@ const app = express();
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const logRoutes = require('./routes/log.routes');
+const postRoutes = require('./routes/post.routes');
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/src', express.static(path.join(__dirname, '../src')));
 app.use('/', express.static(path.join(__dirname, '../public')));
 
