@@ -6,4 +6,7 @@ const users = [
     { id: 3, username: 'employee', password: bcrypt.hashSync('employee123', 10), role: 'employee' },
 ];
 
-module.exports = { users };
+// In-memory storage for blog posts
+const posts = [];
+
+module.exports = { users, posts };

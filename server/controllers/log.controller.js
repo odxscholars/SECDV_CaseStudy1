@@ -1,7 +1,8 @@
+const { info } = require('../utils/logger');
 const logs = [];
 
 function addLog(action, user) {
-    console.log(`Log Action: ${action} by User: ${user}`);
+    info(action, user);
     logs.push({
         id: logs.length + 1,
         action,
@@ -11,7 +12,14 @@ function addLog(action, user) {
 }
 
 const getLogs = (req, res) => {
-    res.json(logs);
+    const { q } = req.query;
+    const filtered = q
+        ? logs.filter(l =>
+            l.action.toLowerCase().includes(q.toLowerCase()) ||
+            l.user.toLowerCase().includes(q.toLowerCase())
+        )
+        : logs;
+    res.json(filtered);
 };
 
 module.exports = { getLogs, addLog };

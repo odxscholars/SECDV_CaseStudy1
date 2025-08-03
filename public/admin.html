@@ -6,6 +6,7 @@
         <input name="username" placeholder="Username" required />
         <input name="password" type="password" placeholder="Password" required />
         <select name="role">
+            <option value="admin">Administrator</option>
             <option value="manager">Manager</option>
             <option value="employee">Employee</option>
         </select>
@@ -19,7 +20,16 @@
 </section>
 
 <section>
+    <h3>Change Password</h3>
+    <form id="passwordForm">
+        <input name="password" type="password" placeholder="New Password" required />
+        <button type="submit">Update</button>
+    </form>
+</section>
+
+<section>
     <h3>Application Logs</h3>
+    <input id="logFilter" placeholder="Filter" />
     <button onclick="loadLogs()">View Logs</button>
     <ul id="logList"></ul>
 </section>
@@ -64,7 +74,31 @@
         list.innerHTML = '';
         users.forEach(user => {
             const li = document.createElement('li');
-            li.textContent = `${user.username} (${user.role})`;
+            li.textContent = `${user.username}`;
+
+            const roleSelect = document.createElement('select');
+            ['admin', 'manager', 'employee'].forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r;
+                opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+                if (user.role === r) opt.selected = true;
+                roleSelect.appendChild(opt);
+            });
+
+            const saveBtn = document.createElement('button');
+            saveBtn.innerText = 'Change Role';
+            saveBtn.onclick = async () => {
+                await fetch(`/api/users/${user.id}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ role: roleSelect.value })
+                });
+                loadUsers();
+                loadLogs();
+            };
 
             const deleteBtn = document.createElement('button');
             deleteBtn.innerText = 'Delete';
@@ -77,28 +111,14 @@
                 loadLogs();
             };
 
-            const promoteBtn = document.createElement('button');
-            promoteBtn.innerText = 'Make Manager';
-            promoteBtn.onclick = async () => {
-                await fetch(`/api/users/${user.id}/role`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ role: 'manager' })
-                });
-                loadUsers();
-                loadLogs();
-            };
-
-            li.append(deleteBtn, promoteBtn);
+            li.append(` (${user.role}) `, roleSelect, saveBtn, deleteBtn);
             list.appendChild(li);
         });
     }
 
     async function loadLogs() {
-        const res = await fetch('/api/logs', {
+        const q = document.getElementById('logFilter').value;
+        const res = await fetch(`/api/logs${q ? `?q=${encodeURIComponent(q)}` : ''}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const logs = await res.json();
@@ -110,6 +130,17 @@
             logList.appendChild(li);
         });
     }
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = e.target.password.value;
+        await fetch('/api/users/password', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ password })
+        });
+        e.target.reset();
+    });
 
     loadUsers();
 </script>
