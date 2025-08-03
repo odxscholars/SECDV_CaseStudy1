@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { findByUsername, createUser } = require('../models/user.model');
+const { findByUsername, createUserRecord } = require('../models/user.model');
 const logger = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET;
 
@@ -28,6 +28,7 @@ const login = async (req, res) => {
         
         try {
             user = findByUsername(username);
+            console.log("User found:", user);  // TEMPORARY DEBUG
             if (user && await bcrypt.compare(password, user.password)) {
                 loginSuccess = true;
             }
@@ -39,6 +40,7 @@ const login = async (req, res) => {
             });
         }
         
+        console.log("hello")
         if (!loginSuccess) {
             // LOG FAILED AUTH ATTEMPT (2.4.6)
             logger.warn('AUTH_ATTEMPT', { 
@@ -166,7 +168,7 @@ const register = async (req, res) => {
         }
         
         const hashed = await bcrypt.hash(password, 12);
-        const user = createUser({ username, password: hashed, role: 'employee' });
+        const user = createUserRecord({ username, password: hashed, role: 'employee' });
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role }, 
             SECRET, 

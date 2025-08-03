@@ -41,7 +41,7 @@
 
   fetch('/api/auth/session').then(res => res.json()).then(u => {
     currentUser = u;
-    document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+    document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
     loadPosts();
   }).catch(() => {
     loadPosts();

@@ -79,4 +79,4 @@ function legacyInfo(action, user) {
 
 // Export the logger and legacy function
 module.exports = logger;
-module.exports.info = legacyInfo;
+module.exports.legacyInfo = legacyInfo;
