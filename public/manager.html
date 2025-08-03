@@ -95,6 +95,26 @@
     const form = e.target;
     const oldPassword = form.oldPassword.value;
     const newPassword = form.newPassword.value;
+
+    const minLength = 8;
+    const hasUppercase = /[A-Z]/.test(newPassword);
+    const hasLowercase = /[a-z]/.test(newPassword);
+    const hasNumber    = /[0-9]/.test(newPassword);
+    const hasSpecial   = /[\W_]/.test(newPassword);
+
+    const missing = [];
+
+    if (newPassword.length < minLength) missing.push(`at least ${minLength} characters`);
+    if (!hasUppercase) missing.push('an uppercase letter');
+    if (!hasLowercase) missing.push('a lowercase letter');
+    if (!hasNumber)    missing.push('a number');
+    if (!hasSpecial)   missing.push('a special character');
+
+    if (missing.length > 0) {
+      alert(`New password must include ${missing.join(', ')}.`);
+      return;
+    }
+
     const res = await fetch('/api/users/me/password', {
       method: 'PUT',
       headers: {
@@ -103,6 +123,7 @@
       },
       body: JSON.stringify({ oldPassword, newPassword })
     });
+
     const data = await res.json();
     alert(data.message);
     form.reset();
