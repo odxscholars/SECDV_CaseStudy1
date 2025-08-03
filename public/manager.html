@@ -18,12 +18,21 @@
 </section>
 
 <section>
-  <h3>Change Password</h3>
-  <form id="passwordForm">
-    <input name="oldPassword" type="password" placeholder="Old Password" required />
-    <input name="newPassword" type="password" placeholder="New Password" required />
-    <button type="submit">Change</button>
-  </form>
+    <h3>Change Password</h3>
+    <form id="passwordForm">
+        <input name="oldPassword" type="password" placeholder="Old Password" required />
+        <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput"/>
+        <button type="submit">Change</button>
+    </form>
+
+   <p> Your new password must contain: </p>
+    <ul id="passwordChecklist">
+        <li id="check-length">❌ At least 8 characters</li>
+        <li id="check-uppercase">❌ One uppercase letter</li>
+        <li id="check-lowercase">❌ One lowercase letter</li>
+        <li id="check-number">❌ One number</li>
+        <li id="check-special">❌ One special character</li>
+    </ul>
 </section>
 
 <script>
@@ -90,6 +99,43 @@
     });
   }
 
+  const passwordInput = document.getElementById('passwordInput');
+  const checkLength = document.getElementById('check-length');
+  const checkUppercase = document.getElementById('check-uppercase');
+  const checkLowercase = document.getElementById('check-lowercase');
+  const checkNumber = document.getElementById('check-number');
+  const checkSpecial = document.getElementById('check-special');
+
+  passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+
+    updateChecklist(checkLength, password.length >= 8);
+    updateChecklist(checkUppercase, /[A-Z]/.test(password));
+    updateChecklist(checkLowercase, /[a-z]/.test(password));
+    updateChecklist(checkNumber, /[0-9]/.test(password));
+    updateChecklist(checkSpecial, /[\W_]/.test(password));
+  });
+
+  function updateChecklist(element, valid) {
+    if (valid) {
+        element.textContent = '✅ ' + element.textContent.slice(2);
+        element.classList.add('valid');
+        element.classList.remove('invalid');
+    } else {
+        element.textContent = '❌ ' + element.textContent.slice(2);
+        element.classList.add('invalid');
+        element.classList.remove('valid');
+    }
+  }
+
+  function resetChecklist() {
+    updateChecklist(checkLength, false);
+    updateChecklist(checkUppercase, false);
+    updateChecklist(checkLowercase, false);
+    updateChecklist(checkNumber, false);
+    updateChecklist(checkSpecial, false);
+  }
+
   document.getElementById('passwordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -127,6 +173,7 @@
     const data = await res.json();
     alert(data.message);
     form.reset();
+    resetChecklist();
   });
 
   loadPosts();
