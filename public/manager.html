@@ -16,6 +16,15 @@
   <ul id="postList"></ul>
 </section>
 
+<section>
+  <h3>Change Password</h3>
+  <form id="passwordForm">
+    <input name="oldPassword" type="password" placeholder="Old Password" required />
+    <input name="newPassword" type="password" placeholder="New Password" required />
+    <button type="submit">Change</button>
+  </form>
+</section>
+
 <script>
   const token = localStorage.getItem('token');
 
@@ -41,13 +50,27 @@
   });
 
   async function loadPosts() {
-    const res = await fetch('/api/posts');
+    const res = await fetch('/api/posts', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const posts = await res.json();
     const list = document.getElementById('postList');
     list.innerHTML = '';
     posts.forEach(p => {
       const li = document.createElement('li');
-      li.textContent = `${p.author}: ${p.content}`;
+      li.textContent = `[${new Date(p.createdAt).toLocaleString()}] ${p.author}: ${p.content}`;
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = async () => {
+        const newContent = prompt('Edit post', p.content);
+        if (!newContent) return;
+        await fetch(`/api/posts/${p.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ content: newContent })
+        });
+        loadPosts();
+      };
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Delete';
       delBtn.onclick = async () => {
@@ -57,10 +80,28 @@
         });
         loadPosts();
       };
-      li.appendChild(delBtn);
+      li.append(editBtn, delBtn);
       list.appendChild(li);
     });
   }
+
+  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const oldPassword = form.oldPassword.value;
+    const newPassword = form.newPassword.value;
+    const res = await fetch('/api/users/me/password', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
+    const data = await res.json();
+    alert(data.message);
+    form.reset();
+  });
 
   loadPosts();
 </script>

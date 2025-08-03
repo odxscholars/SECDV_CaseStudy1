@@ -41,13 +41,37 @@
   });
 
   async function loadPosts() {
-    const res = await fetch('/api/posts');
+    const res = await fetch('/api/posts', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const posts = await res.json();
     const list = document.getElementById('postList');
     list.innerHTML = '';
     posts.forEach(p => {
       const li = document.createElement('li');
-      li.textContent = `${p.author}: ${p.content}`;
+      li.textContent = `[${new Date(p.createdAt).toLocaleString()}] ${p.author}: ${p.content}`;
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = async () => {
+        const newContent = prompt('Edit post', p.content);
+        if (!newContent) return;
+        await fetch(`/api/posts/${p.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ content: newContent })
+        });
+        loadPosts();
+      };
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.onclick = async () => {
+        await fetch(`/api/posts/${p.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadPosts();
+      };
+      li.append(editBtn, delBtn);
       list.appendChild(li);
     });
   }

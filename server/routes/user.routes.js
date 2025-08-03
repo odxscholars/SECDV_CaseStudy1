@@ -4,7 +4,8 @@ const {
     getProfile,
     createUser,
     deleteUser,
-    updateUserRole
+    updateUserRole,
+    changePassword
 } = require('../controllers/user.controller');
 
 const { verifyToken } = require('../middlewares/auth.middleware');
@@ -17,6 +18,9 @@ router.get('/', verifyToken, allowRoles('admin', 'manager'), listUsers);
 
 // --- View Own Profile ---
 router.get('/me', verifyToken, getProfile);
+
+// --- Change Own Password ---
+router.put('/me/password', verifyToken, changePassword);
 
 // --- Create User (Admin only) ---
 router.post('/', verifyToken, allowRoles('admin'), createUser);

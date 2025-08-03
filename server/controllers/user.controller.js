@@ -14,8 +14,8 @@ const createUser = async (req, res) => {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
-    if (!['manager', 'employee'].includes(role)) {
-        return res.status(403).json({ message: 'Admins can only create Role A (manager) or Role B (employee)' });
+    if (!['admin', 'manager', 'employee'].includes(role)) {
+        return res.status(403).json({ message: 'Invalid role' });
     }
 
     const exists = users.find(u => u.username === username);
@@ -25,7 +25,7 @@ const createUser = async (req, res) => {
     const newUser = { id: nextId++, username, password: hash, role };
     users.push(newUser);
 
-    addLog(`Created ${role} account for '${username}'`, req.user.role);
+    addLog(`Created ${role} account for '${username}'`, req.user.username);
 
     res.json({ message: `User '${username}' created`, user: { id: newUser.id, username, role: newUser.role } });
 };
@@ -46,8 +46,8 @@ const updateUserRole = (req, res) => {
     const id = parseInt(req.params.id);
     const { role } = req.body;
 
-    if (!['manager', 'employee'].includes(role)) {
-        return res.status(403).json({ message: 'Admins can only assign manager or employee roles' });
+    if (!['admin', 'manager', 'employee'].includes(role)) {
+        return res.status(403).json({ message: 'Invalid role' });
     }
 
     const user = users.find(u => u.id === id);
@@ -60,6 +60,17 @@ const updateUserRole = (req, res) => {
     user.role = role;
     addLog(`Changed role of user ID ${id} to ${role}`, req.user.username);
     res.json({ message: 'Role updated', user: { id: user.id, username: user.username, role } });
+};
+
+const changePassword = async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = users.find(u => u.id === req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) return res.status(401).json({ message: 'Invalid password' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    addLog(`Changed password for user ID ${user.id}`, user.username);
+    res.json({ message: 'Password updated' });
 };
 
 const listUsers = (req, res) => {
@@ -80,5 +91,6 @@ module.exports = {
     getProfile,
     createUser,
     deleteUser,
-    updateUserRole
+    updateUserRole,
+    changePassword
 };

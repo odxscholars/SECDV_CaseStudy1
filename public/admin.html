@@ -6,6 +6,7 @@
         <input name="username" placeholder="Username" required />
         <input name="password" type="password" placeholder="Password" required />
         <select name="role">
+            <option value="admin">Admin</option>
             <option value="manager">Manager</option>
             <option value="employee">Employee</option>
         </select>
@@ -20,8 +21,18 @@
 
 <section>
     <h3>Application Logs</h3>
+    <input id="logFilter" placeholder="Filter logs" />
     <button onclick="loadLogs()">View Logs</button>
     <ul id="logList"></ul>
+</section>
+
+<section>
+    <h3>Change Password</h3>
+    <form id="passwordForm">
+        <input name="oldPassword" type="password" placeholder="Old Password" required />
+        <input name="newPassword" type="password" placeholder="New Password" required />
+        <button type="submit">Change</button>
+    </form>
 </section>
 
 <script>
@@ -77,28 +88,38 @@
                 loadLogs();
             };
 
-            const promoteBtn = document.createElement('button');
-            promoteBtn.innerText = 'Make Manager';
-            promoteBtn.onclick = async () => {
+            const roleSelect = document.createElement('select');
+            ['admin','manager','employee'].forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r;
+                opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+                if (r === user.role) opt.selected = true;
+                roleSelect.appendChild(opt);
+            });
+
+            const updateBtn = document.createElement('button');
+            updateBtn.innerText = 'Update Role';
+            updateBtn.onclick = async () => {
                 await fetch(`/api/users/${user.id}/role`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ role: 'manager' })
+                    body: JSON.stringify({ role: roleSelect.value })
                 });
                 loadUsers();
                 loadLogs();
             };
 
-            li.append(deleteBtn, promoteBtn);
+            li.append(deleteBtn, roleSelect, updateBtn);
             list.appendChild(li);
         });
     }
 
     async function loadLogs() {
-        const res = await fetch('/api/logs', {
+        const q = document.getElementById('logFilter').value;
+        const res = await fetch('/api/logs' + (q ? `?q=${encodeURIComponent(q)}` : ''), {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const logs = await res.json();
@@ -110,6 +131,24 @@
             logList.appendChild(li);
         });
     }
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const oldPassword = form.oldPassword.value;
+        const newPassword = form.newPassword.value;
+        const res = await fetch('/api/users/me/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+        const data = await res.json();
+        alert(data.message);
+        form.reset();
+    });
 
     loadUsers();
 </script>
