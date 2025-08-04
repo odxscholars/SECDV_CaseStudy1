@@ -1,4 +1,5 @@
 const passwordInput = document.getElementById('passwordInput');
+const confirmPasswordInput = document.getElementById('confirmPasswordInput');
 const checkLength = document.getElementById('check-length');
 const checkUppercase = document.getElementById('check-uppercase');
 const checkLowercase = document.getElementById('check-lowercase');
@@ -52,6 +53,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
     if (missing.length > 0) {
         alert(`Password must include ${missing.join(', ')}.`);
+        return;
+    }
+
+    const confirmPassword = e.target.confirmPassword.value;
+    if (password !== confirmPassword) {
+        alert('Password and confirm password do not match.');
         return;
     }
 
