@@ -112,7 +112,7 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin };
         
         res.json({ 
             success: true, 
@@ -216,7 +216,7 @@ const register = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin };
         
         logger.info('User registered successfully', { 
             userId: user.id, 
