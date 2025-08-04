@@ -75,6 +75,8 @@ const changePassword = async (req, res) => {
     const user = users.find(u => u.id === req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    normalizePasswordHistory(user);
+
     const valid = await bcrypt.compare(oldPassword, user.password);
     if (!valid) return res.status(401).json({ message: 'Invalid password' });
 
@@ -188,6 +190,8 @@ const resetPasswordWithoutAuth = async (req, res) => {
   const user = users.find(u => u.username === username);
   if (!user) return res.status(404).json({ message: 'User not found.' });
 
+  normalizePasswordHistory(user);
+
   // Ensure passwordHistory is initialized
   if (!user.passwordHistory) user.passwordHistory = [];
 
@@ -212,6 +216,16 @@ const resetPasswordWithoutAuth = async (req, res) => {
   addLog(`Password reset via recovery for '${username}'`, username);
   res.json({ message: 'Password successfully reset.' });
 };
+
+function normalizePasswordHistory(user) {
+    if (!Array.isArray(user.passwordHistory)) {
+        try {
+            user.passwordHistory = JSON.parse(user.passwordHistory || '[]');
+        } catch (err) {
+            user.passwordHistory = [];
+        }
+    }
+}
 
 module.exports = {
     listUsers,
