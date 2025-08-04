@@ -46,7 +46,7 @@
     <section id="section-create" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Create Post</h3>
         <form id="postForm" class="space-y-2">
-            <textarea name="content" required class="w-full border px-3 py-2 rounded"></textarea>
+            <textarea name="content" required maxlength="300" class="w-full border px-3 py-2 rounded"></textarea>
             <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Post</button>
         </form>
     </section>
@@ -59,8 +59,8 @@
     <section id="section-password" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Change Password</h3>
         <form id="passwordForm" class="space-y-2">
-            <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
-            <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput" class="w-full border px-3 py-2 rounded"/>
+            <input name="oldPassword" type="password" placeholder="Old Password" required maxlength="50" class="w-full border px-3 py-2 rounded" />
+            <input name="newPassword" type="password" placeholder="New Password" required maxlength="50" id="passwordInput" class="w-full border px-3 py-2 rounded"/>
             <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change</button>
         </form>
 
@@ -77,7 +77,7 @@
     <section id="section-recovery" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
         <form id="recoveryForm" class="space-y-2">
-            <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
+            <input name="password" type="password" placeholder="Password" required maxlength="50" id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
             <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change Recovery Questions</button>
         </form>
     </section>
@@ -161,7 +161,7 @@
           });
           loadPosts();
         };
-        li.append(editBtn, delBtn);
+        // li.append(editBtn, delBtn);
       }
       list.appendChild(li);
     });
