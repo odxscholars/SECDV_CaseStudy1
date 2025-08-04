@@ -29,10 +29,10 @@ router.put('/me/password', verifyToken, changePassword);
 router.post('/', verifyToken, allowRoles('admin'), createUser);
 
 // --- Delete User (Admin only) ---
-router.delete('/:id', verifyToken, allowRoles('admin'), deleteUser);
+router.delete('/:id', verifyToken, allowRoles('admin', 'manager'), deleteUser);
 
 // --- Update User Role (Admin only) ---
-router.put('/:id/role', verifyToken, allowRoles('admin'), updateUserRole);
+router.put('/:id/role', verifyToken, allowRoles('admin', 'manager'), updateUserRole);
 
 // --- Update Recovery Questions ---
 router.put('/me/recovery', verifyToken, updateRecovery);

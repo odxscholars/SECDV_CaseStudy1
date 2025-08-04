@@ -30,11 +30,20 @@
         <li id="lastFailedLogin"></li>
     </ul>
 
-    <section class="bg-white p-4 rounded shadow">
-        <button onclick="viewProfile()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View My Profile</button>
+    <nav class="flex flex-wrap gap-2">
+        <button onclick="showSection('profile')" class="tab px-3 py-1 rounded bg-chan-green text-white">My Profile</button>
+        <button onclick="showSection('create')" class="tab px-3 py-1 rounded bg-chan-green text-white">Create Post</button>
+        <button onclick="showSection('posts')" class="tab px-3 py-1 rounded bg-chan-green text-white">Posts</button>
+        <button onclick="showSection('password')" class="tab px-3 py-1 rounded bg-chan-green text-white">Change Password</button>
+        <button onclick="showSection('recovery')" class="tab px-3 py-1 rounded bg-chan-green text-white">Update Recovery</button>
+    </nav>
+
+    <section id="section-profile" class="bg-white p-4 rounded shadow space-y-2">
+        <h3 class="text-xl font-semibold mb-4">My Profile</h3>
+        <div id="profileDetails" class="space-y-1 text-sm"></div>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-create" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Create Post</h3>
         <form id="postForm" class="space-y-2">
             <textarea name="content" required class="w-full border px-3 py-2 rounded"></textarea>
@@ -42,12 +51,12 @@
         </form>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-posts" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Posts</h3>
         <ul id="postList" class="space-y-1"></ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-password" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Change Password</h3>
         <form id="passwordForm" class="space-y-2">
             <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
@@ -65,7 +74,7 @@
         </ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-recovery" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
         <form id="recoveryForm" class="space-y-2">
             <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
@@ -79,25 +88,32 @@
   let currentUser = null;
 
   fetch('/api/auth/session').then(res => res.json()).then(u => {
-    currentUser = u;
+    currentUser = u.user;
     document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
-    document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin 
+    document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin
       ? `Last successful login: ${new Date(u.user.lastLogin).toLocaleString()}`
       : 'Last successful login: Never';
-    document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin 
+    document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin
       ? `Last failed login: ${new Date(u.user.lastFailedLogin).toLocaleString()}`
       : 'Last failed login: Never';
-    loadPosts();
-  }).catch(() => {
-    loadPosts();
-  });
+  }).catch(() => {});
 
-  async function viewProfile() {
+  const sections = ['profile','create','posts','password','recovery'];
+  function showSection(id) {
+    sections.forEach(s => {
+      document.getElementById(`section-${s}`).classList.toggle('hidden', s !== id);
+    });
+    if (id === 'profile') loadProfile();
+    if (id === 'posts') loadPosts();
+  }
+
+  async function loadProfile() {
     const res = await fetch('/api/users/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    alert(JSON.stringify(data));
+    const div = document.getElementById('profileDetails');
+    div.innerHTML = `<p>Username: ${data.username}</p><p>Role: ${data.role}</p>`;
   }
 
   document.getElementById('postForm').addEventListener('submit', async (e) => {
@@ -257,7 +273,7 @@
       alert(data.message || 'Password verification failed.');
     }
   });
-
+  showSection('profile');
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     localStorage.removeItem('token');
