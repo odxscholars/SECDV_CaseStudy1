@@ -18,7 +18,7 @@ function addLog(action, user) {
 
 const getLogs = (req, res) => {
     try {
-        const { q, type = 'all' } = req.query;
+        const { q, type = 'all', start, end } = req.query;
         const logDir = path.join(__dirname, '../logs');
         
         let result = {
@@ -92,6 +92,22 @@ const getLogs = (req, res) => {
             } catch (error) {
                 logger.error('Error reading application logs', { error: error.message });
             }
+        }
+
+        // Apply timestamp filter if provided
+        const startTime = start ? new Date(start) : null;
+        const endTime = end ? new Date(end) : null;
+        if (startTime || endTime) {
+            const inRange = log => {
+                const t = new Date(log.timestamp || log.time || log.date);
+                if (startTime && t < startTime) return false;
+                if (endTime && t > endTime) return false;
+                return true;
+            };
+            result.logs.security = result.logs.security.filter(inRange);
+            result.logs.errors = result.logs.errors.filter(inRange);
+            result.logs.application = result.logs.application.filter(inRange);
+            result.logs.legacy = result.logs.legacy.filter(inRange);
         }
 
         // Apply search filter if provided
