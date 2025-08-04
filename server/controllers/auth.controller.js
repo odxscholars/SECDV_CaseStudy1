@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { findById, findByUsername, createUserRecord } = require('../models/user.model');
+const { findByUsername, createUserRecord } = require('../models/user.model');
+const db = require('../database');
 const logger = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET;
 
@@ -27,7 +28,7 @@ const login = async (req, res) => {
         let user = null;
         
         try {
-            user = findByUsername(username);
+            user = await findByUsername(username);
             if (user && user.consecutiveFails >= 5) {
                 const lockoutDuration = 5 * 60 * 1000; // 5 minutes in ms
                 const timeSinceLastFail = Date.now() - new Date(user.lastFailedLogin).getTime();
@@ -59,8 +60,15 @@ const login = async (req, res) => {
         if (!loginSuccess) {
             // 2.1.12
             if (user) {
-                user.lastFailedLogin = new Date();
-                user.consecutiveFails++;
+                user.lastFailedLogin = new Date().toISOString();
+                user.consecutiveFails = (user.consecutiveFails || 0) + 1;
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'UPDATE users SET lastFailedLogin = ?, consecutiveFails = ? WHERE id = ?',
+                        [user.lastFailedLogin, user.consecutiveFails, user.id],
+                        err => (err ? reject(err) : resolve())
+                    );
+                });
             }
 
             // LOG FAILED AUTH ATTEMPT (2.4.6)
@@ -79,8 +87,15 @@ const login = async (req, res) => {
 
         // 2.1.12
         user.lastLogin = user.currentLogin;
-        user.currentLogin = new Date();
+        user.currentLogin = new Date().toISOString();
         user.consecutiveFails = 0;
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE users SET lastLogin = ?, currentLogin = ?, consecutiveFails = ? WHERE id = ?',
+                [user.lastLogin, user.currentLogin, 0, user.id],
+                err => (err ? reject(err) : resolve())
+            );
+        });
 
         // LOG SUCCESSFUL AUTH ATTEMPT (2.4.6)
         logger.info('AUTH_ATTEMPT', { 
@@ -97,7 +112,7 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
+        req.session.user = { id: user.id, username: user.username, role: user.role };
         
         res.json({ 
             success: true, 
@@ -179,7 +194,7 @@ const register = async (req, res) => {
             });
         }
         
-        if (findByUsername(username)) {
+        if (await findByUsername(username)) {
             // LOG VALIDATION FAILURE (2.4.5)
             logger.warn('VALIDATION_FAILURE', { 
                 reason: 'Username already exists',
@@ -194,14 +209,14 @@ const register = async (req, res) => {
         }
         
         const hashed = await bcrypt.hash(password, 12);
-        const user = createUserRecord({ username, password: hashed, role: 'employee' });
+        const user = await createUserRecord({ username, password: hashed, role: 'employee' });
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role }, 
             SECRET, 
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
+        req.session.user = { id: user.id, username: user.username, role: user.role };
         
         logger.info('User registered successfully', { 
             userId: user.id, 
@@ -254,7 +269,6 @@ const session = (req, res) => {
 const logout = (req, res) => {
     try {
         const userId = req.session?.user?.id;
-        const user = findById(userId);
         req.session.destroy(err => {
             if (err) {
                 logger.error('Logout error', { 

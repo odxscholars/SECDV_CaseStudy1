@@ -1,2 +1,4 @@
 node_modules
 .gitignore
+server/database.sqlite
+server/logs/*.log
