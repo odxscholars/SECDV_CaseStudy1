@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard</title>
+    <title>OpenChan - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'chan-beige': '#F0E0D6',
+              'chan-green': '#117743',
+              'chan-orange': '#FF6600'
+            }
+          }
+        }
+      };
+    </script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-<div class="max-w-4xl mx-auto space-y-6">
+<body class="bg-chan-beige min-h-screen p-6">
+<div class="max-w-5xl mx-auto space-y-4">
     <header class="flex items-center justify-between">
-        <h2 id="welcome" class="text-2xl font-bold">Admin Dashboard</h2>
+        <h2 id="welcome" class="text-2xl font-bold text-chan-green">Admin Dashboard</h2>
         <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Logout</button>
     </header>
     <ul id="loginLog" class="text-sm space-y-1">
@@ -17,7 +30,15 @@
         <li id="lastFailedLogin"></li>
     </ul>
 
-    <section class="bg-white p-4 rounded shadow">
+    <nav class="flex flex-wrap gap-2">
+        <button onclick="showSection('create')" class="tab px-3 py-1 rounded bg-chan-green text-white">Create User</button>
+        <button onclick="showSection('users')" class="tab px-3 py-1 rounded bg-chan-green text-white">Users</button>
+        <button onclick="showSection('logs')" class="tab px-3 py-1 rounded bg-chan-green text-white">Application Logs</button>
+        <button onclick="showSection('password')" class="tab px-3 py-1 rounded bg-chan-green text-white">Change Password</button>
+        <button onclick="showSection('recovery')" class="tab px-3 py-1 rounded bg-chan-green text-white">Update Recovery</button>
+    </nav>
+
+    <section id="section-create" class="bg-white p-4 rounded shadow space-y-2">
         <h3 class="text-xl font-semibold mb-4">Create User</h3>
         <form id="createUserForm" class="space-y-2">
             <input name="username" placeholder="Username" required class="w-full border px-3 py-2 rounded" />
@@ -27,9 +48,8 @@
                 <option value="manager">Manager</option>
                 <option value="employee">Employee</option>
             </select>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Create</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Create</button>
         </form>
-
         <p class="mt-4 text-sm"> The password must contain: </p>
         <ul id="passwordChecklist" class="list-disc list-inside text-sm space-y-1">
             <li id="check-length">❌ At least 8 characters</li>
@@ -40,28 +60,27 @@
         </ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-users" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Users</h3>
         <ul id="userList" class="space-y-1"></ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-logs" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Application Logs</h3>
         <div class="flex space-x-2 mb-2">
             <input id="logFilter" placeholder="Filter logs" class="flex-1 border px-3 py-2 rounded" />
-            <button onclick="loadLogs()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">View Logs</button>
+            <button onclick="loadLogs()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View Logs</button>
         </div>
-        <ul id="logList" class="text-sm space-y-1"></ul>
+        <div id="logList" class="text-sm overflow-x-auto"></div>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-password" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Change Password</h3>
         <form id="passwordForm" class="space-y-2">
             <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
             <input name="newPassword" type="password" placeholder="New Password" required id="newPasswordInput" class="w-full border px-3 py-2 rounded"/>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change</button>
         </form>
-
         <p class="mt-4 text-sm"> Your new password must contain: </p>
         <ul id="newPasswordChecklist" class="list-disc list-inside text-sm space-y-1">
             <li id="new-check-length">❌ At least 8 characters</li>
@@ -72,11 +91,11 @@
         </ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-recovery" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
         <form id="recoveryForm" class="space-y-2">
             <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change Recovery Questions</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change Recovery Questions</button>
         </form>
     </section>
 </div>
@@ -85,14 +104,23 @@
     const token = localStorage.getItem('token');
 
     fetch('/api/auth/session').then(res => res.json()).then(u => {
-    document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
-    document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin 
-        ? `Last successful login: ${new Date(u.user.lastLogin).toLocaleString()}`
-        : 'Last successful login: Never';
-    document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin 
-        ? `Last failed login: ${new Date(u.user.lastFailedLogin).toLocaleString()}`
-        : 'Last failed login: Never';
+        document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
+        document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin
+            ? `Last successful login: ${new Date(u.user.lastLogin).toLocaleString()}`
+            : 'Last successful login: Never';
+        document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin
+            ? `Last failed login: ${new Date(u.user.lastFailedLogin).toLocaleString()}`
+            : 'Last failed login: Never';
     }).catch(() => {});
+
+    const sections = ['create','users','logs','password','recovery'];
+    function showSection(id) {
+        sections.forEach(s => {
+            document.getElementById(`section-${s}`).classList.toggle('hidden', s !== id);
+        });
+        if (id === 'users') loadUsers();
+        if (id === 'logs') loadLogs();
+    }
 
     function validatePassword(password) {
         const minLength = 8;
@@ -121,7 +149,6 @@
 
     passwordInput.addEventListener('input', () => {
         const password = passwordInput.value;
-
         updateChecklist(checkLength, password.length >= 8);
         updateChecklist(checkUppercase, /[A-Z]/.test(password));
         updateChecklist(checkLowercase, /[a-z]/.test(password));
@@ -149,9 +176,7 @@
             return;
         }
 
-        // Password requirements
         const missing = validatePassword(password);
-
         if (missing.length > 0) {
             alert(`Password must include ${missing.join(', ')}.`);
             return;
@@ -171,7 +196,7 @@
         form.reset();
         resetChecklist();
         loadUsers();
-        loadLogs(); // refresh logs after user creation
+        loadLogs();
     });
 
     async function loadUsers() {
@@ -187,6 +212,7 @@
 
             const deleteBtn = document.createElement('button');
             deleteBtn.innerText = 'Delete';
+            deleteBtn.className = 'ml-2 px-2 py-1 bg-red-500 text-white rounded';
             deleteBtn.onclick = async () => {
                 await fetch(`/api/users/${user.id}`, {
                     method: 'DELETE',
@@ -197,6 +223,7 @@
             };
 
             const roleSelect = document.createElement('select');
+            roleSelect.className = 'ml-2 border rounded';
             ['admin','manager','employee'].forEach(r => {
                 const opt = document.createElement('option');
                 opt.value = r;
@@ -207,6 +234,7 @@
 
             const updateBtn = document.createElement('button');
             updateBtn.innerText = 'Update Role';
+            updateBtn.className = 'ml-2 px-2 py-1 bg-chan-green text-white rounded';
             updateBtn.onclick = async () => {
                 await fetch(`/api/users/${user.id}/role`, {
                     method: 'PUT',
@@ -230,13 +258,27 @@
         const res = await fetch('/api/logs' + (q ? `?q=${encodeURIComponent(q)}` : ''), {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        const logs = await res.json();
+        const data = await res.json();
         const logList = document.getElementById('logList');
-        logList.innerHTML = '';
-        logs.forEach(log => {
-            const li = document.createElement('li');
-            li.textContent = `[${log.timestamp}] ${log.user}: ${log.action}`;
-            logList.appendChild(li);
+        logList.innerHTML = '<table class="min-w-full text-left border-collapse"><thead><tr><th class="border-b p-2">Type</th><th class="border-b p-2">Timestamp</th><th class="border-b p-2">Details</th></tr></thead><tbody></tbody></table>';
+        const tbody = logList.querySelector('tbody');
+        const all = [];
+        for (const [type, arr] of Object.entries(data.logs || {})) {
+            arr.forEach(l => all.push({ ...l, type }));
+        }
+        all.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const colors = {
+            security: 'bg-yellow-100 text-yellow-800',
+            errors: 'bg-red-100 text-red-800',
+            application: 'bg-blue-100 text-blue-800',
+            legacy: 'bg-gray-100 text-gray-800'
+        };
+        all.forEach(log => {
+            const tr = document.createElement('tr');
+            const color = colors[log.type] || 'bg-gray-100 text-gray-800';
+            const message = log.action || log.message || '';
+            tr.innerHTML = `<td class="p-2"><span class="px-2 py-1 rounded ${color}">${log.type}</span></td><td class="p-2">${new Date(log.timestamp).toLocaleString()}</td><td class="p-2">${message}${log.user ? ' - ' + log.user : ''}</td>`;
+            tbody.appendChild(tr);
         });
     }
 
@@ -249,7 +291,6 @@
 
     newPasswordInput.addEventListener('input', () => {
         const password = newPasswordInput.value;
-
         updateChecklist(newCheckLength, password.length >= 8);
         updateChecklist(newCheckUppercase, /[A-Z]/.test(password));
         updateChecklist(newCheckLowercase, /[a-z]/.test(password));
@@ -284,19 +325,18 @@
         const newPassword = form.newPassword.value;
 
         const missing = validatePassword(newPassword);
-
         if (missing.length > 0) {
-        alert(`New password must include ${missing.join(', ')}.`);
-        return;
+            alert(`New password must include ${missing.join(', ')}.`);
+            return;
         }
 
         const res = await fetch('/api/users/me/password', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ oldPassword, newPassword })
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ oldPassword, newPassword })
         });
 
         const data = await res.json();
@@ -307,26 +347,20 @@
 
     document.getElementById('recoveryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const password = document.getElementById('recoveryPasswordInput').value;
-
         const sessionRes = await fetch('/api/auth/session');
         const sessionData = await sessionRes.json();
         const username = sessionData.user?.username;
-
         if (!username) {
             alert('Unable to retrieve session. Please log in again.');
             return;
         }
-
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-
         const data = await res.json();
-
         if (res.ok) {
             document.getElementById('recoveryPasswordInput').value = '';
             window.location.href = '/updateRecovery.html';
@@ -335,10 +369,13 @@
         }
     });
 
-    loadUsers();
+    showSection('create');
+
     async function logout() {
         await fetch('/api/auth/logout', { method: 'POST' });
         localStorage.removeItem('token');
         window.location.href = '/';
     }
 </script>
+</body>
+</html>

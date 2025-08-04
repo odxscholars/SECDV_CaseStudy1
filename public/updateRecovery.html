@@ -3,12 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Change Recovery Questions</title>
+  <title>OpenChan - Change Recovery</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'chan-beige': '#F0E0D6',
+            'chan-green': '#117743',
+            'chan-orange': '#FF6600'
+          }
+        }
+      }
+    };
+  </script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-chan-beige min-h-screen flex items-center justify-center">
   <div class="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4">
-    <h2 id='heading' class="text-2xl font-bold text-center">Change Recovery Questions</h2>
+    <h2 id='heading' class="text-2xl font-bold text-center text-chan-green">Change Recovery Questions</h2>
 
     <div>
       <label for="question1" class="block mb-2 font-medium">Recovery Question 1:</label>
@@ -46,7 +59,7 @@
 
     <div class="flex justify-between pt-2">
       <button id="backBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Back</button>
-      <button id="saveBtn" disabled class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
+      <button id="saveBtn" disabled class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
     </div>
   </div>
 

@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Employee Dashboard</title>
+    <title>OpenChan - Employee</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'chan-beige': '#F0E0D6',
+              'chan-green': '#117743',
+              'chan-orange': '#FF6600'
+            }
+          }
+        }
+      };
+    </script>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-chan-beige min-h-screen p-6">
 <div class="max-w-4xl mx-auto space-y-6">
     <header class="flex items-center justify-between">
-        <h2 id="welcome" class="text-2xl font-bold">Employee Dashboard</h2>
+        <h2 id="welcome" class="text-2xl font-bold text-chan-green">Employee Dashboard</h2>
         <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Logout</button>
     </header>
     <ul id="loginLog" class="text-sm space-y-1">
@@ -18,14 +31,14 @@
     </ul>
 
     <section class="bg-white p-4 rounded shadow">
-        <button onclick="viewProfile()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">View My Profile</button>
+        <button onclick="viewProfile()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View My Profile</button>
     </section>
 
     <section class="bg-white p-4 rounded shadow">
         <h3 class="text-xl font-semibold mb-4">Create Post</h3>
         <form id="postForm" class="space-y-2">
             <textarea name="content" required class="w-full border px-3 py-2 rounded"></textarea>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Post</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Post</button>
         </form>
     </section>
 
@@ -39,7 +52,7 @@
         <form id="passwordForm" class="space-y-2">
             <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
             <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput" class="w-full border px-3 py-2 rounded"/>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change</button>
         </form>
 
         <p class="mt-4 text-sm"> Your new password must contain: </p>
@@ -56,7 +69,7 @@
         <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
         <form id="recoveryForm" class="space-y-2">
             <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
-            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change Recovery Questions</button>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change Recovery Questions</button>
         </form>
     </section>
 </div>
