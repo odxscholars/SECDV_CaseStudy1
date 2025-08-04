@@ -1,70 +1,85 @@
-<h2 id="welcome">Admin Dashboard</h2>
-<ul id="loginLog">
-    <li id="lastSuccessfulLogin"></li>
-    <li id="lastFailedLogin"></li>
-</ul>
-<button onclick="logout()">Logout</button>
-
-<section>
-    <h3>Create User</h3>
-    <form id="createUserForm">
-        <input name="username" placeholder="Username" required />
-        <input name="password" type="password" placeholder="Password" required id="passwordInput"/>
-        <select name="role">
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="employee">Employee</option>
-        </select>
-        <button type="submit">Create</button>
-    </form>
-    
-    <p> The password must contain: </p>
-    <ul id="passwordChecklist">
-        <li id="check-length">❌ At least 8 characters</li>
-        <li id="check-uppercase">❌ One uppercase letter</li>
-        <li id="check-lowercase">❌ One lowercase letter</li>
-        <li id="check-number">❌ One number</li>
-        <li id="check-special">❌ One special character</li>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+<div class="max-w-4xl mx-auto space-y-6">
+    <header class="flex items-center justify-between">
+        <h2 id="welcome" class="text-2xl font-bold">Admin Dashboard</h2>
+        <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Logout</button>
+    </header>
+    <ul id="loginLog" class="text-sm space-y-1">
+        <li id="lastSuccessfulLogin"></li>
+        <li id="lastFailedLogin"></li>
     </ul>
-</section>
 
-<section>
-    <h3>Users</h3>
-    <ul id="userList"></ul>
-</section>
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Create User</h3>
+        <form id="createUserForm" class="space-y-2">
+            <input name="username" placeholder="Username" required class="w-full border px-3 py-2 rounded" />
+            <input name="password" type="password" placeholder="Password" required id="passwordInput" class="w-full border px-3 py-2 rounded"/>
+            <select name="role" class="w-full border px-3 py-2 rounded">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+            </select>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Create</button>
+        </form>
 
-<section>
-    <h3>Application Logs</h3>
-    <input id="logFilter" placeholder="Filter logs" />
-    <button onclick="loadLogs()">View Logs</button>
-    <ul id="logList"></ul>
-</section>
+        <p class="mt-4 text-sm"> The password must contain: </p>
+        <ul id="passwordChecklist" class="list-disc list-inside text-sm space-y-1">
+            <li id="check-length">❌ At least 8 characters</li>
+            <li id="check-uppercase">❌ One uppercase letter</li>
+            <li id="check-lowercase">❌ One lowercase letter</li>
+            <li id="check-number">❌ One number</li>
+            <li id="check-special">❌ One special character</li>
+        </ul>
+    </section>
 
-<section>
-    <h3>Change Password</h3>
-    <form id="passwordForm">
-        <input name="oldPassword" type="password" placeholder="Old Password" required />
-        <input name="newPassword" type="password" placeholder="New Password" required id="newPasswordInput"/>
-        <button type="submit">Change</button>
-    </form>
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Users</h3>
+        <ul id="userList" class="space-y-1"></ul>
+    </section>
 
-    <p> Your new password must contain: </p>
-    <ul id="newPasswordChecklist">
-        <li id="new-check-length">❌ At least 8 characters</li>
-        <li id="new-check-uppercase">❌ One uppercase letter</li>
-        <li id="new-check-lowercase">❌ One lowercase letter</li>
-        <li id="new-check-number">❌ One number</li>
-        <li id="new-check-special">❌ One special character</li>
-    </ul>
-</section>
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Application Logs</h3>
+        <div class="flex space-x-2 mb-2">
+            <input id="logFilter" placeholder="Filter logs" class="flex-1 border px-3 py-2 rounded" />
+            <button onclick="loadLogs()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">View Logs</button>
+        </div>
+        <ul id="logList" class="text-sm space-y-1"></ul>
+    </section>
 
-<section>
-    <h3>Update Recovery</h3>
-        <form id="recoveryForm">
-        <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput"/>
-        <button type="submit">Change Recovery Questions</button>
-    </form>
-</section>
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Change Password</h3>
+        <form id="passwordForm" class="space-y-2">
+            <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
+            <input name="newPassword" type="password" placeholder="New Password" required id="newPasswordInput" class="w-full border px-3 py-2 rounded"/>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change</button>
+        </form>
+
+        <p class="mt-4 text-sm"> Your new password must contain: </p>
+        <ul id="newPasswordChecklist" class="list-disc list-inside text-sm space-y-1">
+            <li id="new-check-length">❌ At least 8 characters</li>
+            <li id="new-check-uppercase">❌ One uppercase letter</li>
+            <li id="new-check-lowercase">❌ One lowercase letter</li>
+            <li id="new-check-number">❌ One number</li>
+            <li id="new-check-special">❌ One special character</li>
+        </ul>
+    </section>
+
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
+        <form id="recoveryForm" class="space-y-2">
+            <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Change Recovery Questions</button>
+        </form>
+    </section>
+</div>
 
 <script>
     const token = localStorage.getItem('token');

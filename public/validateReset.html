@@ -2,73 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reset Password</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      padding: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 1.5em;
-      font-weight: bold;
-    }
-    select, input {
-      width: 80%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-    button {
-      padding: 10px 15px;
-      margin-top: 20px;
-      margin-right: 10px;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h2>Reset Password</h2>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4">
+    <h2 class="text-2xl font-bold text-center">Reset Password</h2>
 
-  <label for="username">Username:</label>
-  <input type="text" id="username" placeholder="Username" required />
+    <div>
+      <label for="username" class="block mb-2 font-medium">Username:</label>
+      <input type="text" id="username" placeholder="Username" required class="w-full border px-3 py-2 rounded" />
+    </div>
 
-  <div>
-    <label for="question1">Recovery Question 1:</label>
-    <select id="question1">
-      <option value="">-- Select a question --</option>
-      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
-      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
-      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
-      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
-      <option value="phrase">Wha’s an unusual phrase or saying that you often use and few others do?</option>
-    </select>
-  </div>
+    <div>
+      <label for="question1" class="block mb-2 font-medium">Recovery Question 1:</label>
+      <select id="question1" class="w-full border px-3 py-2 rounded">
+        <option value="">-- Select a question --</option>
+        <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+        <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+        <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+        <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+        <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
+      </select>
+    </div>
 
-  <div>
-    <label for="answer1">Answer to Question 1:</label>
-    <input type="text" id="answer1" maxlength="50" placeholder="Type your answer here" />
-  </div>
+    <div>
+      <label for="answer1" class="block mb-2 font-medium">Answer to Question 1:</label>
+      <input type="text" id="answer1" maxlength="50" placeholder="Type your answer here" class="w-full border px-3 py-2 rounded" />
+    </div>
 
-  <div>
-    <label for="question2">Recovery Question 2:</label>
-    <select id="question2">
-      <option value="">-- Select a question --</option>
-      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
-      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
-      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
-      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
-      <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
-    </select>
-  </div>
+    <div>
+      <label for="question2" class="block mb-2 font-medium">Recovery Question 2:</label>
+      <select id="question2" class="w-full border px-3 py-2 rounded">
+        <option value="">-- Select a question --</option>
+        <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+        <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+        <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+        <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+        <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
+      </select>
+    </div>
 
-  <div>
-    <label for="answer2">Answer to Question 2:</label>
-    <input type="text" id="answer2" maxlength="50" placeholder="Type your answer here" />
-  </div>
+    <div>
+      <label for="answer2" class="block mb-2 font-medium">Answer to Question 2:</label>
+      <input type="text" id="answer2" maxlength="50" placeholder="Type your answer here" class="w-full border px-3 py-2 rounded" />
+    </div>
 
-  <div>
-    <button id="backBtn">Back</button>
-    <button id="resetBtn">Reset</button>
+    <div class="flex justify-between pt-2">
+      <button id="backBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Back</button>
+      <button id="resetBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Reset</button>
+    </div>
   </div>
 
   <script>
