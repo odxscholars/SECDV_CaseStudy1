@@ -5,7 +5,10 @@ const {
     createUser,
     deleteUser,
     updateUserRole,
-    changePassword
+    changePassword,
+    updateRecovery,
+    validateReset,
+    resetPasswordWithoutAuth
 } = require('../controllers/user.controller');
 
 const { verifyToken } = require('../middlewares/auth.middleware');
@@ -30,5 +33,14 @@ router.delete('/:id', verifyToken, allowRoles('admin'), deleteUser);
 
 // --- Update User Role (Admin only) ---
 router.put('/:id/role', verifyToken, allowRoles('admin'), updateUserRole);
+
+// --- Update Recovery Questions ---
+router.put('/me/recovery', verifyToken, updateRecovery);
+
+// --- Validate Recovery Answers ---
+router.post('/validate/reset', validateReset);
+
+// --- Reset Password ---
+router.put('/reset/password', resetPasswordWithoutAuth);
 
 module.exports = router;

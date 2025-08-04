@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { findByUsername, createUser } = require('../models/user.model');
+const { findById, findByUsername, createUserRecord } = require('../models/user.model');
 const logger = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET;
 
@@ -28,6 +28,23 @@ const login = async (req, res) => {
         
         try {
             user = findByUsername(username);
+            if (user && user.consecutiveFails >= 5) {
+                const lockoutDuration = 5 * 60 * 1000; // 5 minutes in ms
+                const timeSinceLastFail = Date.now() - new Date(user.lastFailedLogin).getTime();
+                const timeRemaining = lockoutDuration - timeSinceLastFail;
+
+                if (timeRemaining > 0) {
+                    const minutesLeft = Math.floor(timeRemaining / 60000);
+                    const secondsLeft = Math.floor((timeRemaining % 60000) / 1000);
+                    return res.status(423).json({ 
+                        success: false, 
+                        message: `Account temporarily locked due to too many failed login attempts. Please try again in ${minutesLeft} minute(s) and ${secondsLeft} second(s).` 
+                    });
+                }
+                else {
+                    user.consecutiveFails = 0;
+                }
+            }
             if (user && await bcrypt.compare(password, user.password)) {
                 loginSuccess = true;
             }
@@ -38,8 +55,14 @@ const login = async (req, res) => {
                 ip: req.ip 
             });
         }
-        
+
         if (!loginSuccess) {
+            // 2.1.12
+            if (user) {
+                user.lastFailedLogin = new Date();
+                user.consecutiveFails++;
+            }
+
             // LOG FAILED AUTH ATTEMPT (2.4.6)
             logger.warn('AUTH_ATTEMPT', { 
                 success: false,
@@ -53,6 +76,11 @@ const login = async (req, res) => {
                 message: 'Invalid credentials' 
             });
         }
+
+        // 2.1.12
+        user.lastLogin = user.currentLogin;
+        user.currentLogin = new Date();
+        user.consecutiveFails = 0;
 
         // LOG SUCCESSFUL AUTH ATTEMPT (2.4.6)
         logger.info('AUTH_ATTEMPT', { 
@@ -69,7 +97,7 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
         
         res.json({ 
             success: true, 
@@ -166,14 +194,14 @@ const register = async (req, res) => {
         }
         
         const hashed = await bcrypt.hash(password, 12);
-        const user = createUser({ username, password: hashed, role: 'employee' });
+        const user = createUserRecord({ username, password: hashed, role: 'employee' });
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role }, 
             SECRET, 
             { expiresIn: '1h' }
         );
         
-        req.session.user = { id: user.id, username: user.username, role: user.role };
+        req.session.user = { id: user.id, username: user.username, role: user.role, lastLogin: user.lastLogin, lastFailedLogin: user.lastFailedLogin, currentLogin: user.currentLogin, consecutiveFails: user.consecutiveFails };
         
         logger.info('User registered successfully', { 
             userId: user.id, 
@@ -226,6 +254,7 @@ const session = (req, res) => {
 const logout = (req, res) => {
     try {
         const userId = req.session?.user?.id;
+        const user = findById(userId);
         req.session.destroy(err => {
             if (err) {
                 logger.error('Logout error', { 
@@ -237,6 +266,7 @@ const logout = (req, res) => {
                     message: 'Logout failed' 
                 });
             }
+
             logger.info('User logged out', { userId });
             res.json({ 
                 success: true, 

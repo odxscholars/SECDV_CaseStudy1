@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reset Password</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 1.5em;
+      font-weight: bold;
+    }
+    select, input {
+      width: 80%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-top: 20px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Reset Password</h2>
+
+  <label for="username">Username:</label>
+  <input type="text" id="username" placeholder="Username" required />
+
+  <div>
+    <label for="question1">Recovery Question 1:</label>
+    <select id="question1">
+      <option value="">-- Select a question --</option>
+      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+      <option value="phrase">Wha’s an unusual phrase or saying that you often use and few others do?</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="answer1">Answer to Question 1:</label>
+    <input type="text" id="answer1" maxlength="50" placeholder="Type your answer here" />
+  </div>
+
+  <div>
+    <label for="question2">Recovery Question 2:</label>
+    <select id="question2">
+      <option value="">-- Select a question --</option>
+      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+      <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="answer2">Answer to Question 2:</label>
+    <input type="text" id="answer2" maxlength="50" placeholder="Type your answer here" />
+  </div>
+
+  <div>
+    <button id="backBtn">Back</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <script>
+    const question1 = document.getElementById('question1');
+    const question2 = document.getElementById('question2');
+    const resetBtn = document.getElementById('resetBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    // Prevent selecting the same question twice
+    question1.addEventListener('change', () => {
+      [...question2.options].forEach(opt => {
+        opt.disabled = opt.value && opt.value === question1.value;
+      });
+    });
+
+    question2.addEventListener('change', () => {
+      [...question1.options].forEach(opt => {
+        opt.disabled = opt.value && opt.value === question2.value;
+      });
+    });
+
+    backBtn.addEventListener('click', () => {
+      history.back();
+    });
+
+    resetBtn.addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const q1 = question1.value;
+      const a1 = document.getElementById('answer1').value.trim();
+      const q2 = question2.value;
+      const a2 = document.getElementById('answer2').value.trim();
+
+      if (!username || !q1 || !a1 || !q2 || !a2) {
+        alert('Please fill out all fields.');
+        return;
+      }
+
+      if (q1 === q2) {
+        alert('You must select two different recovery questions.');
+        return;
+      }
+
+      const res = await fetch('/api/users/validate/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          questionA: q1,
+          answerA: a1,
+          questionB: q2,
+          answerB: a2
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        sessionStorage.setItem('resetUser', username);
+        alert('Recovery verified. Please proceed to reset your password.');
+        window.location.href = '/resetPassword.html';
+      } else {
+        alert(data.message || 'Invalid username or recovery answers.');
+      }
+    });
+  </script>
+</body>
+</html>

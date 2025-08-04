@@ -1,4 +1,8 @@
 <h2 id="welcome">Manager Dashboard</h2>
+<ul id="loginLog">
+    <li id="lastSuccessfulLogin"></li>
+    <li id="lastFailedLogin"></li>
+</ul>
 <button onclick="logout()">Logout</button>
 <section>
   <button onclick="viewUsers()">View Employees</button>
@@ -35,11 +39,25 @@
     </ul>
 </section>
 
+<section>
+    <h3>Update Recovery</h3>
+        <form id="recoveryForm">
+        <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput"/>
+        <button type="submit">Change Recovery Questions</button>
+    </form>
+</section>
+
 <script>
   const token = localStorage.getItem('token');
 
   fetch('/api/auth/session').then(res => res.json()).then(u => {
-    document.getElementById('welcome').textContent = `Welcome, ${u.username}`;
+    document.getElementById('welcome').textContent = `Welcome, ${u.user.username}`;
+    document.getElementById('lastSuccessfulLogin').textContent = u.user.lastLogin 
+      ? `Last successful login: ${new Date(u.user.lastLogin).toLocaleString()}`
+      : 'Last successful login: Never';
+    document.getElementById('lastFailedLogin').textContent = u.user.lastFailedLogin 
+      ? `Last failed login: ${new Date(u.user.lastFailedLogin).toLocaleString()}`
+      : 'Last failed login: Never';
   }).catch(() => {});
 
   async function viewUsers() {
@@ -174,6 +192,36 @@
     alert(data.message);
     form.reset();
     resetChecklist();
+  });
+
+  document.getElementById('recoveryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const password = document.getElementById('recoveryPasswordInput').value;
+
+    const sessionRes = await fetch('/api/auth/session');
+    const sessionData = await sessionRes.json();
+    const username = sessionData.user?.username;
+
+    if (!username) {
+      alert('Unable to retrieve session. Please log in again.');
+      return;
+    }
+
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('recoveryPasswordInput').value = '';
+      window.location.href = '/updateRecovery.html';
+    } else {
+      alert(data.message || 'Password verification failed.');
+    }
   });
 
   loadPosts();

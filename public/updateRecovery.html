@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Change Recovery Questions</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+    }
+    label {
+        display: block;
+        margin-top: 1.5em;
+        font-weight: bold;
+    }
+    select, input {
+        width: 80%;
+        padding: 8px;
+        margin-top: 5px;
+    }
+    button {
+        padding: 10px 15px;
+        margin-top: 20px;
+        margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2 id='heading'>Change Recovery Questions</h2>
+
+  <div>
+    <label for="question1">Recovery Question 1:</label>
+    <select id="question1">
+      <option value="">-- Select a question --</option>
+      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+      <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="answer1">Answer to Question 1:</label>
+    <input type="text" id="answer1" maxlength="50" placeholder="Type your answer here" />
+  </div>
+
+  <div>
+    <label for="question2">Recovery Question 2:</label>
+    <select id="question2">
+      <option value="">-- Select a question --</option>
+      <option value="hobby">What’s a past hobby or interest that most people wouldn’t know you had?</option>
+      <option value="song">What’s the title of a song that brings back a strong personal memory for you?</option>
+      <option value="place">What’s the name of a place you visited that significantly impacted your perspective?</option>
+      <option value="nickname">What’s a nickname that only a few close people have ever used for you?</option>
+      <option value="phrase">What’s an unusual phrase or saying that you often use and few others do?</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="answer2">Answer to Question 2:</label>
+    <input type="text" id="answer2" maxlength="50" placeholder="Type your answer here" />
+  </div>
+
+  <div>
+    <button id="backBtn">Back</button>
+    <button id="saveBtn" disabled>Save</button>
+  </div>
+
+  <script>
+    let currentUser = null;
+    fetch('/api/auth/session')
+    .then(res => res.json())
+    .then(data => {
+        currentUser = data.user;
+    })
+    .catch(() => {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/';
+    });
+
+    const question1 = document.getElementById('question1');
+    const question2 = document.getElementById('question2');
+    const answer1 = document.getElementById('answer1');
+    const answer2 = document.getElementById('answer2');
+    const saveBtn = document.getElementById('saveBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    function validateForm() {
+      const isValid =
+        question1.value &&
+        question2.value &&
+        question1.value !== question2.value &&
+        answer1.value.trim() &&
+        answer2.value.trim();
+
+      saveBtn.disabled = !isValid;
+    }
+
+    function updateQuestion1Options() {
+      const selected = question2.value;
+      [...question1.options].forEach(opt => {
+        opt.disabled = opt.value === selected && selected !== "";
+      });
+    }
+
+    function updateQuestion2Options() {
+      const selected = question1.value;
+      [...question2.options].forEach(opt => {
+        opt.disabled = opt.value === selected && selected !== "";
+      });
+    }
+
+    question1.addEventListener('change', () => {
+      updateQuestion2Options();
+      validateForm();
+    });
+
+    question2.addEventListener('change', () => {
+      updateQuestion1Options();
+      validateForm();
+    });
+
+    answer1.addEventListener('input', validateForm);
+    answer2.addEventListener('input', validateForm);
+
+    saveBtn.addEventListener('click', async () => {
+        const q1 = document.getElementById('question1').value;
+        const a1 = document.getElementById('answer1').value.trim();
+        const q2 = document.getElementById('question2').value;
+        const a2 = document.getElementById('answer2').value.trim();
+
+        if (!q1 || !q2 || !a1 || !a2 || q1 === q2) {
+            alert('Please select two different questions and provide answers.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/users/me/recovery', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                recoveryQuestionA: q1,
+                recoveryAnswerA: a1,
+                recoveryQuestionB: q2,
+                recoveryAnswerB: a2
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert('Recovery questions updated.');
+            window.history.back();
+        } else {
+            alert(data.message || 'Failed to update recovery questions.');
+        }
+    });
+
+
+    backBtn.addEventListener('click', () => {
+      history.back();
+    });
+
+    updateQuestion1Options();
+    updateQuestion2Options();
+  </script>
+</body>
+</html>

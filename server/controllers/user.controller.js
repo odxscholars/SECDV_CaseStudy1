@@ -22,7 +22,7 @@ const createUser = async (req, res) => {
     if (exists) return res.status(409).json({ message: 'Username already exists' });
 
     const hash = await bcrypt.hash(password, 10);
-    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash] };
+    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash], lastPasswordChange: new Date().toISOString() };
     users.push(newUser);
 
     addLog(`Created ${role} account for '${username}'`, req.user.username);
@@ -77,8 +77,17 @@ const changePassword = async (req, res) => {
         }
     }
 
+    const now = new Date();
+    const lastChange = new Date(user.lastPasswordChange);
+    const hoursSinceChange = (now - lastChange) / (1000 * 60 * 60);
+
+    if (hoursSinceChange < 24) {
+        return res.status(400).json({ message: 'You can only change your password once every 24 hours' });
+    }
+
     const newHash = await bcrypt.hash(newPassword, 10);
     user.password = newHash;
+    user.lastPasswordChange = new Date().toISOString();
 
     if (!user.passwordHistory) user.passwordHistory = [];
     user.passwordHistory.push(newHash);
@@ -105,11 +114,105 @@ const getProfile = (req, res) => {
     res.json({ id: user.id, username: user.username, role: user.role });
 };
 
+const updateRecovery = (req, res) => {
+    const { recoveryQuestionA, recoveryAnswerA, recoveryQuestionB, recoveryAnswerB } = req.body;
+    const user = users.find(u => u.id === req.user.id);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!recoveryQuestionA || !recoveryAnswerA || !recoveryQuestionB || !recoveryAnswerB) {
+        return res.status(400).json({ message: 'All recovery fields are required' });
+    }
+
+    if (recoveryQuestionA === recoveryQuestionB) {
+        return res.status(400).json({ message: 'Recovery questions must be different' });
+    }
+
+    user.recoveryQuestionA = recoveryQuestionA;
+    user.recoveryAnswerA = recoveryAnswerA;
+    user.recoveryQuestionB = recoveryQuestionB;
+    user.recoveryAnswerB = recoveryAnswerB;
+
+    addLog(`Updated recovery questions for user ID ${user.id}`, user.username);
+    res.json({ message: 'Recovery questions updated successfully' });
+};
+
+const validateReset = (req, res) => {
+    const { username, questionA, answerA, questionB, answerB } = req.body;
+
+    if (!username || !questionA || !answerA || !questionB || !answerB) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    const user = users.find(u => u.username === username);
+    if (!user) return res.status(401).json({ message: 'Invalid username or recovery answers.' });
+
+    const normalize = str => str.trim().toLowerCase();
+
+    const q1 = questionA, a1 = normalize(answerA);
+    const q2 = questionB, a2 = normalize(answerB);
+
+    const uq1 = user.recoveryQuestionA, ua1 = normalize(user.recoveryAnswerA || '');
+    const uq2 = user.recoveryQuestionB, ua2 = normalize(user.recoveryAnswerB || '');
+
+    const directMatch =
+        (q1 === uq1 && a1 === ua1 && q2 === uq2 && a2 === ua2);
+
+    const swappedMatch =
+        (q1 === uq2 && a1 === ua2 && q2 === uq1 && a2 === ua1);
+
+    if (directMatch || swappedMatch) {
+        return res.json({ message: 'Recovery answers verified.' });
+    }
+
+    return res.status(401).json({ message: 'Invalid username or recovery answers.' });
+};
+
+const resetPasswordWithoutAuth = async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  if (!username || !newPassword) {
+    return res.status(400).json({ message: 'Invalid inputs.' });
+  }
+
+  const user = users.find(u => u.username === username);
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+
+  // Ensure passwordHistory is initialized
+  if (!user.passwordHistory) user.passwordHistory = [];
+
+  // Check if the new password matches any previously used password
+  for (const oldHash of user.passwordHistory) {
+    const reused = await bcrypt.compare(newPassword, oldHash);
+    if (reused) {
+      return res.status(400).json({ message: 'You cannot reuse a previous password.' });
+    }
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  user.password = newHash;
+  user.lastPasswordChange = new Date().toISOString();
+  user.passwordHistory.push(newHash);
+
+  // Keep only last 5 passwords
+  if (user.passwordHistory.length > 5) {
+    user.passwordHistory = user.passwordHistory.slice(-5);
+  }
+
+  addLog(`Password reset via recovery for '${username}'`, username);
+  res.json({ message: 'Password successfully reset.' });
+};
+
 module.exports = {
     listUsers,
     getProfile,
     createUser,
     deleteUser,
     updateUserRole,
-    changePassword
+    changePassword,
+    updateRecovery,
+    validateReset,
+    resetPasswordWithoutAuth
 };

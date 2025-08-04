@@ -33,7 +33,7 @@ try {
 try {
     const { verifyToken } = require('./middlewares/auth.middleware');
     const userRoutes = require('./routes/user.routes');
-    app.use('/api/users', verifyToken, userRoutes);
+    app.use('/api/users', userRoutes);
     console.log('✅ User routes loaded');
 } catch (error) {
     console.log('❌ User routes failed:', error.message);
@@ -57,6 +57,24 @@ try {
 } catch (error) {
     console.log('❌ Post routes failed:', error.message);
 }
+
+// Protection
+app.use((req, res, next) => {
+  const publicPages = ['/index.html', '/register.html', '/validateReset.html', '/resetPassword.html', '/'];
+
+  if (req.method !== 'GET') return next(); // Only block GETs to pages
+
+  if (publicPages.includes(req.path) || req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  if (req.path.endsWith('.html') && !req.session.user) {
+    return res.redirect('/index.html');
+  }
+
+  next();
+});
+
 
 // Static files
 app.use('/src', express.static(path.join(__dirname, '../src')));
