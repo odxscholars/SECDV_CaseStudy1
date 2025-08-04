@@ -67,8 +67,17 @@
 
     <section id="section-logs" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Application Logs</h3>
-        <div class="flex space-x-2 mb-2">
-            <input id="logFilter" placeholder="Filter logs" class="flex-1 border px-3 py-2 rounded" />
+        <div class="flex flex-wrap gap-2 mb-2 items-center">
+            <select id="logType" class="border px-3 py-2 rounded">
+                <option value="all">All Types</option>
+                <option value="security">Security</option>
+                <option value="errors">Errors</option>
+                <option value="application">Application</option>
+                <option value="legacy">Legacy</option>
+            </select>
+            <input type="date" id="logStart" class="border px-3 py-2 rounded" />
+            <input type="date" id="logEnd" class="border px-3 py-2 rounded" />
+            <input id="logFilter" placeholder="Filter details" class="flex-1 border px-3 py-2 rounded" />
             <button onclick="loadLogs()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View Logs</button>
         </div>
         <div id="logList" class="text-sm overflow-x-auto"></div>
@@ -255,7 +264,16 @@
 
     async function loadLogs() {
         const q = document.getElementById('logFilter').value;
-        const res = await fetch('/api/logs' + (q ? `?q=${encodeURIComponent(q)}` : ''), {
+        const type = document.getElementById('logType').value;
+        const start = document.getElementById('logStart').value;
+        const end = document.getElementById('logEnd').value;
+        const params = new URLSearchParams();
+        if (q) params.append('q', q);
+        if (type && type !== 'all') params.append('type', type);
+        if (start) params.append('start', start);
+        if (end) params.append('end', end);
+        const qs = params.toString();
+        const res = await fetch('/api/logs' + (qs ? `?${qs}` : ''), {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
