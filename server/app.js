@@ -58,6 +58,24 @@ try {
     console.log('❌ Post routes failed:', error.message);
 }
 
+// Protection
+app.use((req, res, next) => {
+  const publicPages = ['/index.html', '/register.html', '/validateReset.html', '/resetPassword.html', '/'];
+
+  if (req.method !== 'GET') return next(); // Only block GETs to pages
+
+  if (publicPages.includes(req.path) || req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  if (req.path.endsWith('.html') && !req.session.user) {
+    return res.redirect('/index.html');
+  }
+
+  next();
+});
+
+
 // Static files
 app.use('/src', express.static(path.join(__dirname, '../src')));
 app.use('/', express.static(path.join(__dirname, '../public')));
