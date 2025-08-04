@@ -1,51 +1,78 @@
-<h2 id="welcome">Employee Dashboard</h2>
-<ul id="loginLog">
-    <li id="lastSuccessfulLogin"></li>
-    <li id="lastFailedLogin"></li>
-</ul>
-<button onclick="logout()">Logout</button>
-<section>
-  <button onclick="viewProfile()">View My Profile</button>
-</section>
-
-<section>
-  <h3>Create Post</h3>
-  <form id="postForm">
-    <textarea name="content" required></textarea>
-    <button type="submit">Post</button>
-  </form>
-</section>
-
-<section>
-  <h3>Posts</h3>
-  <ul id="postList"></ul>
-</section>
-
-<section>
-    <h3>Change Password</h3>
-    <form id="passwordForm">
-        <input name="oldPassword" type="password" placeholder="Old Password" required />
-        <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput"/>
-        <button type="submit">Change</button>
-    </form>
-
-   <p> Your new password must contain: </p>
-    <ul id="passwordChecklist">
-        <li id="check-length">❌ At least 8 characters</li>
-        <li id="check-uppercase">❌ One uppercase letter</li>
-        <li id="check-lowercase">❌ One lowercase letter</li>
-        <li id="check-number">❌ One number</li>
-        <li id="check-special">❌ One special character</li>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenChan - Employee</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'chan-beige': '#F0E0D6',
+              'chan-green': '#117743',
+              'chan-orange': '#FF6600'
+            }
+          }
+        }
+      };
+    </script>
+</head>
+<body class="bg-chan-beige min-h-screen p-6">
+<div class="max-w-4xl mx-auto space-y-6">
+    <header class="flex items-center justify-between">
+        <h2 id="welcome" class="text-2xl font-bold text-chan-green">Employee Dashboard</h2>
+        <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Logout</button>
+    </header>
+    <ul id="loginLog" class="text-sm space-y-1">
+        <li id="lastSuccessfulLogin"></li>
+        <li id="lastFailedLogin"></li>
     </ul>
-</section>
 
-<section>
-    <h3>Update Recovery</h3>
-        <form id="recoveryForm">
-        <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput"/>
-        <button type="submit">Change Recovery Questions</button>
-    </form>
-</section>
+    <section class="bg-white p-4 rounded shadow">
+        <button onclick="viewProfile()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View My Profile</button>
+    </section>
+
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Create Post</h3>
+        <form id="postForm" class="space-y-2">
+            <textarea name="content" required class="w-full border px-3 py-2 rounded"></textarea>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Post</button>
+        </form>
+    </section>
+
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Posts</h3>
+        <ul id="postList" class="space-y-1"></ul>
+    </section>
+
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Change Password</h3>
+        <form id="passwordForm" class="space-y-2">
+            <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
+            <input name="newPassword" type="password" placeholder="New Password" required id="passwordInput" class="w-full border px-3 py-2 rounded"/>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change</button>
+        </form>
+
+        <p class="mt-4 text-sm"> Your new password must contain: </p>
+        <ul id="passwordChecklist" class="list-disc list-inside text-sm space-y-1">
+            <li id="check-length">❌ At least 8 characters</li>
+            <li id="check-uppercase">❌ One uppercase letter</li>
+            <li id="check-lowercase">❌ One lowercase letter</li>
+            <li id="check-number">❌ One number</li>
+            <li id="check-special">❌ One special character</li>
+        </ul>
+    </section>
+
+    <section class="bg-white p-4 rounded shadow">
+        <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
+        <form id="recoveryForm" class="space-y-2">
+            <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
+            <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change Recovery Questions</button>
+        </form>
+    </section>
+</div>
 
 <script>
   const token = localStorage.getItem('token');
@@ -237,3 +264,5 @@
     window.location.href = '/';
   }
 </script>
+</body>
+</html>
