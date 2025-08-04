@@ -139,6 +139,37 @@ const updateRecovery = (req, res) => {
     res.json({ message: 'Recovery questions updated successfully' });
 };
 
+const validateReset = (req, res) => {
+    const { username, questionA, answerA, questionB, answerB } = req.body;
+
+    if (!username || !questionA || !answerA || !questionB || !answerB) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    const user = users.find(u => u.username === username);
+    if (!user) return res.status(401).json({ message: 'Invalid username or recovery answers.' });
+
+    const normalize = str => str.trim().toLowerCase();
+
+    const q1 = questionA, a1 = normalize(answerA);
+    const q2 = questionB, a2 = normalize(answerB);
+
+    const uq1 = user.recoveryQuestionA, ua1 = normalize(user.recoveryAnswerA || '');
+    const uq2 = user.recoveryQuestionB, ua2 = normalize(user.recoveryAnswerB || '');
+
+    const directMatch =
+        (q1 === uq1 && a1 === ua1 && q2 === uq2 && a2 === ua2);
+
+    const swappedMatch =
+        (q1 === uq2 && a1 === ua2 && q2 === uq1 && a2 === ua1);
+
+    if (directMatch || swappedMatch) {
+        return res.json({ message: 'Recovery answers verified.' });
+    }
+
+    return res.status(401).json({ message: 'Invalid username or recovery answers.' });
+};
+
 module.exports = {
     listUsers,
     getProfile,
@@ -146,5 +177,6 @@ module.exports = {
     deleteUser,
     updateUserRole,
     changePassword,
-    updateRecovery
+    updateRecovery,
+    validateReset
 };

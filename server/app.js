@@ -33,7 +33,7 @@ try {
 try {
     const { verifyToken } = require('./middlewares/auth.middleware');
     const userRoutes = require('./routes/user.routes');
-    app.use('/api/users', verifyToken, userRoutes);
+    app.use('/api/users', userRoutes);
     console.log('✅ User routes loaded');
 } catch (error) {
     console.log('❌ User routes failed:', error.message);

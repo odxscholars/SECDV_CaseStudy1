@@ -6,7 +6,8 @@ const {
     deleteUser,
     updateUserRole,
     changePassword,
-    updateRecovery
+    updateRecovery,
+    validateReset
 } = require('../controllers/user.controller');
 
 const { verifyToken } = require('../middlewares/auth.middleware');
@@ -34,5 +35,8 @@ router.put('/:id/role', verifyToken, allowRoles('admin'), updateUserRole);
 
 // --- Update Recovery Questions ---
 router.put('/me/recovery', verifyToken, updateRecovery);
+
+// --- Validate Recovery Answers ---
+router.post('/validate/reset', validateReset);
 
 module.exports = router;
