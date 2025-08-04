@@ -1,8 +1,12 @@
-const { users } = require('../database');
+const db = require('../database');
+const { findByUsername, createUserRecord } = require('../models/user.model');
 const { addLog } = require('./log.controller');
 const bcrypt = require('bcrypt');
 
-let nextId = users.length + 1;
+let users = [];
+db.all('SELECT * FROM users', (err, rows) => {
+    if (!err) users = rows;
+});
 
 const createUser = async (req, res) => {
     if (req.user.role !== 'admin') {
@@ -18,16 +22,20 @@ const createUser = async (req, res) => {
         return res.status(403).json({ message: 'Invalid role' });
     }
 
-    const exists = users.find(u => u.username === username);
-    if (exists) return res.status(409).json({ message: 'Username already exists' });
+    try {
+        const exists = await findByUsername(username);
+        if (exists) return res.status(409).json({ message: 'Username already exists' });
 
-    const hash = await bcrypt.hash(password, 10);
-    const newUser = { id: nextId++, username, password: hash, role, passwordHistory: [hash], lastPasswordChange: new Date().toISOString() };
-    users.push(newUser);
+        const hash = await bcrypt.hash(password, 10);
+        const newUser = await createUserRecord({ username, password: hash, role });
+        users.push(newUser);
 
-    addLog(`Created ${role} account for '${username}'`, req.user.username);
+        addLog(`Created ${role} account for '${username}'`, req.user.username);
 
-    res.json({ message: `User '${username}' created`, user: { id: newUser.id, username, role: newUser.role } });
+        res.json({ message: `User '${username}' created`, user: { id: newUser.id, username, role: newUser.role } });
+    } catch (error) {
+        res.status(500).json({ message: 'User creation failed' });
+    }
 };
 
 
