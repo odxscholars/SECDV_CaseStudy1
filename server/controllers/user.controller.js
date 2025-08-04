@@ -170,6 +170,41 @@ const validateReset = (req, res) => {
     return res.status(401).json({ message: 'Invalid username or recovery answers.' });
 };
 
+const resetPasswordWithoutAuth = async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  if (!username || !newPassword) {
+    return res.status(400).json({ message: 'Invalid inputs.' });
+  }
+
+  const user = users.find(u => u.username === username);
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+
+  // Ensure passwordHistory is initialized
+  if (!user.passwordHistory) user.passwordHistory = [];
+
+  // Check if the new password matches any previously used password
+  for (const oldHash of user.passwordHistory) {
+    const reused = await bcrypt.compare(newPassword, oldHash);
+    if (reused) {
+      return res.status(400).json({ message: 'You cannot reuse a previous password.' });
+    }
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  user.password = newHash;
+  user.lastPasswordChange = new Date().toISOString();
+  user.passwordHistory.push(newHash);
+
+  // Keep only last 5 passwords
+  if (user.passwordHistory.length > 5) {
+    user.passwordHistory = user.passwordHistory.slice(-5);
+  }
+
+  addLog(`Password reset via recovery for '${username}'`, username);
+  res.json({ message: 'Password successfully reset.' });
+};
+
 module.exports = {
     listUsers,
     getProfile,
@@ -178,5 +213,6 @@ module.exports = {
     updateUserRole,
     changePassword,
     updateRecovery,
-    validateReset
+    validateReset,
+    resetPasswordWithoutAuth
 };

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Password Reset</title>
+  <title>Reset Password</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,7 +27,7 @@
   </style>
 </head>
 <body>
-  <h2>Password Reset</h2>
+  <h2>Reset Password</h2>
 
   <label for="username">Username:</label>
   <input type="text" id="username" placeholder="Username" required />
@@ -126,6 +126,7 @@
       const data = await res.json();
 
       if (res.ok) {
+        sessionStorage.setItem('resetUser', username);
         alert('Recovery verified. Please proceed to reset your password.');
         window.location.href = '/resetPassword.html';
       } else {
