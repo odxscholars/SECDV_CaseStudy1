@@ -78,7 +78,12 @@
             <input type="date" id="logStart" class="border px-3 py-2 rounded" />
             <input type="date" id="logEnd" class="border px-3 py-2 rounded" />
             <input id="logFilter" placeholder="Filter details" class="flex-1 border px-3 py-2 rounded" />
+            <select id="logSort" class="border px-3 py-2 rounded" onchange="loadLogs()">
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
+            </select>
             <button onclick="loadLogs()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View Logs</button>
+            <button onclick="refreshLogs()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">Refresh</button>
         </div>
         <div id="logList" class="text-sm overflow-x-auto"></div>
     </section>
@@ -267,6 +272,7 @@
         const type = document.getElementById('logType').value;
         const start = document.getElementById('logStart').value;
         const end = document.getElementById('logEnd').value;
+        const sort = document.getElementById('logSort').value;
         const params = new URLSearchParams();
         if (q) params.append('q', q);
         if (type && type !== 'all') params.append('type', type);
@@ -284,7 +290,9 @@
         for (const [type, arr] of Object.entries(data.logs || {})) {
             arr.forEach(l => all.push({ ...l, type }));
         }
-        all.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+        all.sort((a,b) => sort === 'asc'
+            ? new Date(a.timestamp) - new Date(b.timestamp)
+            : new Date(b.timestamp) - new Date(a.timestamp));
         const colors = {
             security: 'bg-yellow-100 text-yellow-800',
             errors: 'bg-red-100 text-red-800',
@@ -298,6 +306,10 @@
             tr.innerHTML = `<td class="p-2"><span class="px-2 py-1 rounded ${color}">${log.type}</span></td><td class="p-2">${new Date(log.timestamp).toLocaleString()}</td><td class="p-2">${message}${log.user ? ' - ' + log.user : ''}</td>`;
             tbody.appendChild(tr);
         });
+    }
+
+    function refreshLogs() {
+        loadLogs();
     }
 
     const newPasswordInput = document.getElementById('newPasswordInput');

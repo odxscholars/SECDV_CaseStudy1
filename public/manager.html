@@ -30,11 +30,20 @@
         <li id="lastFailedLogin"></li>
     </ul>
 
-    <section class="bg-white p-4 rounded shadow">
-        <button onclick="viewUsers()" class="bg-chan-green text-white px-4 py-2 rounded hover:bg-chan-orange">View Employees</button>
+    <nav class="flex flex-wrap gap-2">
+        <button onclick="showSection('employees')" class="tab px-3 py-1 rounded bg-chan-green text-white">Employees</button>
+        <button onclick="showSection('create')" class="tab px-3 py-1 rounded bg-chan-green text-white">Create Post</button>
+        <button onclick="showSection('posts')" class="tab px-3 py-1 rounded bg-chan-green text-white">Posts</button>
+        <button onclick="showSection('password')" class="tab px-3 py-1 rounded bg-chan-green text-white">Change Password</button>
+        <button onclick="showSection('recovery')" class="tab px-3 py-1 rounded bg-chan-green text-white">Update Recovery</button>
+    </nav>
+
+    <section id="section-employees" class="bg-white p-4 rounded shadow space-y-2">
+        <h3 class="text-xl font-semibold mb-4">Employees</h3>
+        <ul id="employeeList" class="space-y-1"></ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-create" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Create Post</h3>
         <form id="postForm" class="space-y-2">
             <textarea name="content" required class="w-full border px-3 py-2 rounded"></textarea>
@@ -42,12 +51,12 @@
         </form>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-posts" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Posts</h3>
         <ul id="postList" class="space-y-1"></ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-password" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Change Password</h3>
         <form id="passwordForm" class="space-y-2">
             <input name="oldPassword" type="password" placeholder="Old Password" required class="w-full border px-3 py-2 rounded" />
@@ -65,7 +74,7 @@
         </ul>
     </section>
 
-    <section class="bg-white p-4 rounded shadow">
+    <section id="section-recovery" class="bg-white p-4 rounded shadow space-y-2 hidden">
         <h3 class="text-xl font-semibold mb-4">Update Recovery</h3>
         <form id="recoveryForm" class="space-y-2">
             <input name="password" type="password" placeholder="Password" required id="recoveryPasswordInput" class="w-full border px-3 py-2 rounded"/>
@@ -87,12 +96,65 @@
       : 'Last failed login: Never';
   }).catch(() => {});
 
-  async function viewUsers() {
+  const sections = ['employees','create','posts','password','recovery'];
+  function showSection(id) {
+    sections.forEach(s => {
+      document.getElementById(`section-${s}`).classList.toggle('hidden', s !== id);
+    });
+    if (id === 'employees') loadEmployees();
+    if (id === 'posts') loadPosts();
+  }
+
+  async function loadEmployees() {
     const res = await fetch('/api/users', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    const data = await res.json();
-    alert(JSON.stringify(data));
+    const users = await res.json();
+    const list = document.getElementById('employeeList');
+    list.innerHTML = '';
+    users.forEach(user => {
+      const li = document.createElement('li');
+      li.textContent = `${user.username} (${user.role})`;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerText = 'Delete';
+      deleteBtn.className = 'ml-2 px-2 py-1 bg-red-500 text-white rounded';
+      deleteBtn.onclick = async () => {
+        await fetch(`/api/users/${user.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadEmployees();
+      };
+
+      const roleSelect = document.createElement('select');
+      roleSelect.className = 'ml-2 border rounded';
+      ['admin','manager','employee'].forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
+        if (r === user.role) opt.selected = true;
+        roleSelect.appendChild(opt);
+      });
+
+      const updateBtn = document.createElement('button');
+      updateBtn.innerText = 'Update Role';
+      updateBtn.className = 'ml-2 px-2 py-1 bg-chan-green text-white rounded';
+      updateBtn.onclick = async () => {
+        await fetch(`/api/users/${user.id}/role`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ role: roleSelect.value })
+        });
+        loadEmployees();
+      };
+
+      li.append(deleteBtn, roleSelect, updateBtn);
+      list.appendChild(li);
+    });
   }
 
   document.getElementById('postForm').addEventListener('submit', async (e) => {
@@ -257,7 +319,7 @@
     }
   });
 
-  loadPosts();
+  showSection('employees');
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     localStorage.removeItem('token');
