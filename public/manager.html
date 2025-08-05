@@ -202,35 +202,11 @@
         loadEmployees();
       };
 
-      const roleSelect = document.createElement('select');
-      roleSelect.className = 'ml-2 border rounded';
-      ['admin','manager','employee'].forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r;
-        opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
-        if (r === user.role) opt.selected = true;
-        roleSelect.appendChild(opt);
-      });
-
-      const updateBtn = document.createElement('button');
-      updateBtn.innerText = 'Update Role';
-      updateBtn.className = 'ml-2 px-2 py-1 bg-chan-green text-white rounded';
-      updateBtn.onclick = async () => {
-        await fetch(`/api/users/${user.id}/role`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ role: roleSelect.value })
-        });
-        loadEmployees();
-      };
-
-      li.append(deleteBtn, roleSelect, updateBtn);
+      li.append(deleteBtn); // Only append delete button
       list.appendChild(li);
     });
   }
+
 
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
