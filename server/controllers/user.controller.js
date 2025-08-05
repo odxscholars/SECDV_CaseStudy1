@@ -253,6 +253,12 @@ function normalizePasswordHistory(user) {
     }
 }
 
+function reloadUsersFromDB() {
+    db.all('SELECT * FROM users', (err, rows) => {
+        if (!err) users = rows;
+    });
+}
+
 module.exports = {
     listUsers,
     getProfile,
@@ -262,5 +268,7 @@ module.exports = {
     changePassword,
     updateRecovery,
     validateReset,
-    resetPasswordWithoutAuth
+    resetPasswordWithoutAuth,
+    users,
+    reloadUsersFromDB
 };

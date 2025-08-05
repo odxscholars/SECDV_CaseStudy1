@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { findByUsername, createUserRecord } = require('../models/user.model');
+const { users, reloadUsersFromDB } = require('./user.controller');
 const db = require('../database');
 const logger = require('../utils/logger');
 const SECRET = process.env.JWT_SECRET;
@@ -151,7 +152,7 @@ const register = async (req, res) => {
         }
 
         // Validate username length
-        if (username.length < 3 || username.length > 30) {
+        if (username.length < 3 || username.length > 50) {
             // LOG VALIDATION FAILURE (2.4.5)
             logger.warn('VALIDATION_FAILURE', { 
                 reason: 'Username length invalid',
@@ -161,7 +162,7 @@ const register = async (req, res) => {
             });
             return res.status(400).json({ 
                 success: false, 
-                message: 'Username must be between 3 and 30 characters' 
+                message: 'Username must be between 3 and 50 characters' 
             });
         }
 
@@ -210,6 +211,10 @@ const register = async (req, res) => {
         
         const hashed = await bcrypt.hash(password, 12);
         const user = await createUserRecord({ username, password: hashed, role: 'employee' });
+        
+        users.push(user); 
+        reloadUsersFromDB();
+        
         const token = jwt.sign(
             { id: user.id, username: user.username, role: user.role }, 
             SECRET, 
