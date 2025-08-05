@@ -196,41 +196,52 @@ const validateReset = (req, res) => {
 };
 
 const resetPasswordWithoutAuth = async (req, res) => {
-  const { username, newPassword } = req.body;
+    const { username, newPassword } = req.body;
 
-  if (!username || !newPassword) {
-    return res.status(400).json({ message: 'Invalid inputs.' });
-  }
-
-  const user = users.find(u => u.username === username);
-  if (!user) return res.status(404).json({ message: 'User not found.' });
-
-  normalizePasswordHistory(user);
-
-  // Ensure passwordHistory is initialized
-  if (!user.passwordHistory) user.passwordHistory = [];
-
-  // Check if the new password matches any previously used password
-  for (const oldHash of user.passwordHistory) {
-    const reused = await bcrypt.compare(newPassword, oldHash);
-    if (reused) {
-      return res.status(400).json({ message: 'You cannot reuse a previous password.' });
+    if (!username || !newPassword) {
+        return res.status(400).json({ message: 'Invalid inputs.' });
     }
-  }
 
-  const newHash = await bcrypt.hash(newPassword, 10);
-  user.password = newHash;
-  user.lastPasswordChange = new Date().toISOString();
-  user.passwordHistory.push(newHash);
+    const user = users.find(u => u.username === username);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
 
-  // Keep only last 5 passwords
-  if (user.passwordHistory.length > 5) {
-    user.passwordHistory = user.passwordHistory.slice(-5);
-  }
+    normalizePasswordHistory(user);
 
-  addLog(`Password reset via recovery for '${username}'`, username);
-  res.json({ message: 'Password successfully reset.' });
+    if (!user.passwordHistory) user.passwordHistory = [];
+
+    for (const oldHash of user.passwordHistory) {
+        const reused = await bcrypt.compare(newPassword, oldHash);
+        if (reused) {
+            return res.status(400).json({ message: 'You cannot reuse a previous password.' });
+        }
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    user.password = newHash;
+    user.lastPasswordChange = new Date().toISOString();
+    user.passwordHistory.push(newHash);
+
+    if (user.passwordHistory.length > 5) {
+        user.passwordHistory = user.passwordHistory.slice(-5);
+    }
+
+    const passwordHistoryStr = JSON.stringify(user.passwordHistory);
+
+    db.run(
+        `UPDATE users SET password = ?, lastPasswordChange = ?, passwordHistory = ? WHERE id = ?`,
+        [newHash, user.lastPasswordChange, passwordHistoryStr, user.id],
+        (err) => {
+            if (err) {
+                console.error('Password reset DB update failed:', err);
+                return res.status(500).json({ message: 'Failed to reset password in database.' });
+            }
+
+            addLog(`Password reset via recovery for '${username}'`, username);
+            res.json({ message: 'Password successfully reset.' });
+        }
+    );
 };
+
 
 function normalizePasswordHistory(user) {
     if (!Array.isArray(user.passwordHistory)) {
