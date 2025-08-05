@@ -38,16 +38,20 @@ const createUser = async (req, res) => {
     }
 };
 
-
 const deleteUser = (req, res) => {
     const id = parseInt(req.params.id);
     const index = users.findIndex(u => u.id === id);
     if (index === -1) return res.status(404).json({ message: 'User not found' });
 
-    users.splice(index, 1);
-    addLog(`Deleted user ID ${id}`, req.user.username);
+    db.run('DELETE FROM users WHERE id = ?', [id], function (err) {
+        if (err) {
+            return res.status(500).json({ message: 'Database deletion failed.' });
+        }
 
-    res.json({ message: 'User deleted' });
+        users.splice(index, 1);
+        addLog(`Deleted user ID ${id}`, req.user.username);
+        res.json({ message: 'User deleted' });
+    });
 };
 
 const updateUserRole = (req, res) => {
@@ -106,8 +110,19 @@ const changePassword = async (req, res) => {
         user.passwordHistory = user.passwordHistory.slice(-5);
     }
 
-    addLog(`Changed password for user ID ${user.id}`, user.username);
-    res.json({ message: 'Password updated' });
+    const passwordHistoryStr = JSON.stringify(user.passwordHistory);
+    db.run(
+        `UPDATE users SET password = ?, lastPasswordChange = ?, passwordHistory = ? WHERE id = ?`,
+        [newHash, user.lastPasswordChange, passwordHistoryStr, user.id],
+        (err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Failed to update password in database.' });
+            }
+
+            addLog(`Changed password for user ID ${user.id}`, user.username);
+            res.json({ message: 'Password updated successfully' });
+        }
+    );
 };
 
 

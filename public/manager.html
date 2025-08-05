@@ -74,7 +74,7 @@
             </button>
           </div>
           <div class="relative">
-            <input name="newPassword" type="password" placeholder="New Password" required maxlength="50" id="passwordInput" class="toggle-password-input w-full border px-3 py-2 rounded"/>
+            <input name="newPassword" type="password" placeholder="New Password" required maxlength="50" id="newPasswordInput" class="toggle-password-input w-full border px-3 py-2 rounded"/>
             <button type="button" class="toggle-password-button absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-chan-green">
               <!-- Eye icon (hidden) -->
               <svg class="eye-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,6 +87,22 @@
               </svg>
             </button>
           </div>
+
+          <div class="relative">
+            <input name="confirmNewPassword" type="password" placeholder="Confirm New Password" required maxlength="50" id="confirmNewPasswordInput" class="toggle-password-input w-full border px-3 py-2 rounded"/>
+              <button type="button" class="toggle-password-button absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 hover:text-chan-green">
+                  <!-- Eye icon (hidden) -->
+                  <svg class="eye-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  <!-- Eye slash icon (visible) -->
+                  <svg class="eye-slash-icon w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                  </svg>
+              </button>
+            </div>
+
           <button type="submit" class="w-full bg-chan-green text-white py-2 rounded hover:bg-chan-orange">Change</button>
         </form>
 
@@ -271,15 +287,16 @@
     });
   }
 
-  const passwordInput = document.getElementById('passwordInput');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const confirmNewPasswordInput = document.getElementById('confirmNewPasswordInput');
   const checkLength = document.getElementById('check-length');
   const checkUppercase = document.getElementById('check-uppercase');
   const checkLowercase = document.getElementById('check-lowercase');
   const checkNumber = document.getElementById('check-number');
   const checkSpecial = document.getElementById('check-special');
 
-  passwordInput.addEventListener('input', () => {
-    const password = passwordInput.value;
+  newPasswordInput.addEventListener('input', () => {
+    const password = newPasswordInput.value;
 
     updateChecklist(checkLength, password.length >= 8);
     updateChecklist(checkUppercase, /[A-Z]/.test(password));
@@ -313,6 +330,7 @@
     const form = e.target;
     const oldPassword = form.oldPassword.value;
     const newPassword = form.newPassword.value;
+    const confirmNewPassword = form.confirmNewPassword.value;
 
     const minLength = 8;
     const hasUppercase = /[A-Z]/.test(newPassword);
@@ -331,6 +349,11 @@
     if (missing.length > 0) {
       alert(`New password must include ${missing.join(', ')}.`);
       return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        alert('New password and Confirm new password do not match.');
+        return;
     }
 
     const res = await fetch('/api/users/me/password', {
